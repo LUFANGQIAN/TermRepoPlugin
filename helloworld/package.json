@@ -16,6 +16,47 @@
       {
         "command": "helloworld.helloworld",
         "title": "Hello World test"
+      },
+      {
+        "command": "helloworld.showCPUInfo",
+        "title": "显示 CPU 信息",
+        "category": "HelloWorld"
+      },
+      {
+        "command": "helloworld.showCPUNum",
+        "title": "显示 CPU 核心数",
+        "category": "HelloWorld"
+      },
+      {
+        "command": "helloworld.printSelection",
+        "title": "打印选中内容",
+        "category": "HelloWorld"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "helloworld.showCPUInfo",
+          "group": "navigation",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "helloworld.showCPUNum",
+          "group": "navigation",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "helloworld.printSelection",
+          "group": "navigation",
+          "when": "editorHasSelection"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "helloworld.printSelection",
+        "key": "alt+q",
+        "when": "editorTextFocus && editorHasSelection"
       }
     ]
   },

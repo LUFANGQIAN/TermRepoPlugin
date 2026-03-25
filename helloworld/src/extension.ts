@@ -1,45 +1,71 @@
-// The module 'vscode' contains the VS Code extensibility API
-// 'vscode' 模块包含了 VS Code 扩展性 API
-// Import the module and reference it with the alias vscode in your code below
-// 导入该模块，并在下方代码中使用别名 vscode 引用它
 import * as vscode from 'vscode';
+import * as os from 'os';
 
-// This method is called when your extension is activated
-// 当你的扩展被激活时，会调用此方法
-// Your extension is activated the very first time the command is executed
-// 你的扩展在命令首次执行时被激活
+
+
+
+
+
+//vscode弹窗打印信息
 export function activate(context: vscode.ExtensionContext) {
+	console.log('扩展已激活');
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// 使用控制台输出诊断信息 (console.log) 和错误 (console.error)
-	// This line of code will only be executed once when your extension is activated
-	// 这行代码只会在扩展激活时执行一次
-	console.log('Congratulations, your extension "helloworld" is now active!');
-	console.log('恭喜，您的扩展程序“helloworld”现已激活！');
+	// 获取并输出 CPU 信息（激活时执行一次）
+	const osCpusInfo = os.cpus();
+	console.log(`CPU 核心数: ${osCpusInfo.length}`);
+	console.log(`CPU 型号: ${osCpusInfo[0].model}`);
 
-	// The command has been defined in the package.json file
-	// 该命令已在 package.json 文件中定义
-	// Now provide the implementation of the command with registerCommand
-	// 现在使用 registerCommand 提供命令的实现
-	// The commandId parameter must match the command field in package.json
-	// commandId 参数必须与 package.json 中的 command 字段匹配
-	const disposable = vscode.commands.registerCommand('helloworld.helloworld', () => {
-		// The code you place here will be executed every time your command is executed
-		// 你在此处编写的代码将在每次执行命令时运行
-		// Display a message box to the user
-		// 向用户显示一个消息框
+	// console.log(osCpusInfo);
+	// console.log(typeof (osCpusInfo)); 
 
-		let massage: string = '这是变量输入的消息';
+	// 注册vscode弹窗打印命令
+	const registerMessageNotification = vscode.commands.registerCommand('helloworld.helloworld', () => {
+		console.log('命令 helloworld.helloWorld 已执行');
 		vscode.window.showInformationMessage('Hello World from helloworld!');
-		vscode.window.showInformationMessage('没错 第一个插件跑起来了');
-		vscode.window.showInformationMessage(massage);
+		vscode.window.showInformationMessage('没错，第一个插件跑起来了');
+		vscode.window.showInformationMessage(`CPU 型号: ${osCpusInfo[0].model}`);
 	});
 
-	context.subscriptions.push(disposable);
+	//注册CPU信息函数
+	const RegisterLogCpusInfo = vscode.commands.registerCommand('helloworld.showCPUInfo', () => {
+		const cpus = os.cpus();
+		const cpuModel = cpus[0]?.model || '未知';
+		const cpuCount = cpus.length;
+		vscode.window.showInformationMessage(`CPU: ${cpuModel} (${cpuCount} 核心)`);
+	});
+
+	//注册CPU核心数
+	const RegisterCpusNum = vscode.commands.registerCommand('helloworld.showCPUNum', () => {
+		const cpus = os.cpus();
+		const cpuCount = cpus.length;
+		vscode.window.showInformationMessage(`CPU核心数: ${cpuCount} 核`);
+	});
+
+	//选中文字打印模块
+	const printSelectionCmd = vscode.commands.registerCommand('helloworld.printSelection', () => {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showWarningMessage('没有活动的编辑器');
+			return;
+		}
+
+		const selection = editor.selection;
+		if (selection.isEmpty) {
+			vscode.window.showWarningMessage('没有选中任何文本');
+			return;
+		}
+
+		const selectedText = editor.document.getText(selection);
+		// 打印到控制台
+		console.log('选中的内容:', selectedText);
+		// 可选：弹出消息框显示
+		vscode.window.showInformationMessage(`选中内容: ${selectedText}`);
+	});
+
+	// 将命令注册添加到上下文订阅中
+	context.subscriptions.push(registerMessageNotification, RegisterLogCpusInfo, RegisterCpusNum, printSelectionCmd);
 }
 
-// This method is called when your extension is deactivated
-// 当你的扩展被停用时，会调用此方法
 export function deactivate() {
 	console.log('扩展被停用');
 
