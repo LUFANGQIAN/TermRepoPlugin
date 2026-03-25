@@ -2,14 +2,17 @@ import * as vscode from 'vscode';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import { printSelection } from './commands/printSelection';
 
 
 //vscode弹窗打印信息
 export function activate(context: vscode.ExtensionContext) {
 	console.log('扩展已激活');
 
+	//应用printSelection命令并实例化
+	const printSelectionCmd = printSelection();
 
-
+	//获取路径
 	const storagePath = context.globalStorageUri.fsPath;
 	const wordsFilePath = path.join(storagePath, 'words.json');
 
@@ -85,30 +88,6 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage(`CPU核心数: ${cpuCount} 核`);
 	});
 
-	//选中文字打印模块
-	const printSelectionCmd = vscode.commands.registerCommand('termrepoplugin-vscode.printSelection', async () => {
-		const editor = vscode.window.activeTextEditor;
-		if (!editor) {
-			vscode.window.showWarningMessage('没有活动的编辑器');
-			return;
-		}
-
-		const selection = editor.selection;
-		if (selection.isEmpty) {
-			vscode.window.showWarningMessage('没有选中任何文本');
-			return;
-		}
-
-		const selectedText = editor.document.getText(selection);
-		// 打印到控制台
-		console.log('选中的内容:', selectedText);
-
-		// 弹出消息框显示
-		vscode.window.showInformationMessage(`选中内容: ${selectedText}`);
-
-		// 保存到全局存储文件
-		await addWord(selectedText);
-	});
 
 	// 将命令注册添加到上下文订阅中
 	context.subscriptions.push(registerMessageNotification, RegisterLogCpusInfo, RegisterCpusNum, printSelectionCmd);
