@@ -24,6 +24,8 @@ import * as fs from 'fs/promises';
  */
 
 export async function ensureStorageDir(storagePath: string): Promise<void> {
+  console.log('进入存储检测与创建模块');
+  
   try {
     await fs.mkdir(storagePath, { recursive: true });
   } catch (err) {

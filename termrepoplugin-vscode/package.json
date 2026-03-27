@@ -14,39 +14,25 @@
   "contributes": {
     "commands": [
       {
-        "command": "termrepoplugin-vscode.helloWorld",
-        "title": "Hello World"
-      },
-      {
-        "command": "termrepoplugin-vscode.showCPUInfo",
-        "title": "显示 CPU 信息",
-        "category": "HelloWorld"
-      },
-      {
-        "command": "termrepoplugin-vscode.showCPUNum",
-        "title": "显示 CPU 核心数",
-        "category": "HelloWorld"
-      },
-      {
         "command": "termrepoplugin-vscode.printSelection",
         "title": "打印选中内容",
-        "category": "HelloWorld"
+        "category": "TermRepoPlugin"
+      },
+      {
+        "command": "termrepoplugin-vscode.addWord",
+        "title": "收藏选中单词",
+        "category": "TermRepoPlugin"
       }
     ],
     "menus": {
       "editor/context": [
         {
-          "command": "termrepoplugin-vscode.showCPUInfo",
-          "group": "navigation",
-          "when": "editorTextFocus"
-        },
-        {
-          "command": "termrepoplugin-vscode.showCPUNum",
-          "group": "navigation",
-          "when": "editorTextFocus"
-        },
-        {
           "command": "termrepoplugin-vscode.printSelection",
+          "group": "navigation",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "termrepoplugin-vscode.addWord",
           "group": "navigation",
           "when": "editorHasSelection"
         }
@@ -54,7 +40,7 @@
     },
     "keybindings": [
       {
-        "command": "termrepoplugin-vscode.printSelection",
+        "command": "termrepoplugin-vscode.addWord",
         "key": "alt+q",
         "when": "editorTextFocus && editorHasSelection"
       }
@@ -69,13 +55,13 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.110.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "typescript-eslint": "^8.56.1",
+    "@types/vscode": "^1.110.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.39.3",
     "typescript": "^5.9.3",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
+    "typescript-eslint": "^8.56.1"
   }
 }

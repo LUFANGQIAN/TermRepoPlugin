@@ -33,30 +33,34 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.printSelectionCommand = printSelectionCommand;
+exports.addWordCommand = addWordCommand;
 const vscode = __importStar(require("vscode"));
-//创建打印选中命令模块并导出
-function printSelectionCommand() {
-    //业务实现部分 返回此对象
-    //extension主入口导入此命令模块 注册即可使用
-    return vscode.commands.registerCommand('termrepoplugin-vscode.printSelection', async () => {
+function addWordCommand(storage) {
+    return vscode.commands.registerCommand('termrepoplugin-vscode.addWord', async () => {
+        // 1. 忽略任何传入的参数，直接获取活动编辑器的选中文本
+        let word;
         const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            vscode.window.showWarningMessage('没有活动的编辑器');
+        if (editor && !editor.selection.isEmpty) {
+            word = editor.document.getText(editor.selection);
+        }
+        // 2. 如果没有选中文本，则弹出输入框让用户输入
+        if (!word) {
+            word = await vscode.window.showInputBox({
+                prompt: '请输入要收藏的单词',
+                placeHolder: '例如: hello world'
+            });
+        }
+        if (!word) {
             return;
         }
-        const selection = editor.selection;
-        if (selection.isEmpty) {
-            vscode.window.showWarningMessage('没有选中任何文本');
-            return;
+        // 3. 保存单词
+        const added = await storage.addWord(word);
+        if (added) {
+            vscode.window.showInformationMessage(`✅ 已收藏单词: ${word}`);
         }
-        const selectedText = editor.document.getText(selection);
-        // 打印到控制台
-        console.log('选中的内容:', selectedText);
-        // 弹出消息框显示
-        vscode.window.showInformationMessage(`选中内容: ${selectedText}`);
-        // 保存到全局存储文件
-        // await addWord(selectedText);
+        else {
+            vscode.window.showWarningMessage(`⚠️ 单词 "${word}" 已存在`);
+        }
     });
 }
-//# sourceMappingURL=printSelection.js.map
+//# sourceMappingURL=addWord.js.map

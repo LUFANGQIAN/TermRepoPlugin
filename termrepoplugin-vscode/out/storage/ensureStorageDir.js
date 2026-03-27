@@ -58,6 +58,7 @@ const fs = __importStar(require("fs/promises"));
  * - 如果创建失败，会在控制台输出错误信息，但不会抛出异常（可根据需要修改）。
  */
 async function ensureStorageDir(storagePath) {
+    console.log('进入存储检测与创建模块');
     try {
         await fs.mkdir(storagePath, { recursive: true });
     }

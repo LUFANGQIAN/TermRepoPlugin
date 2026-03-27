@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-
+  
 //创建打印选中命令模块并导出
-export function printSelection() {
+export function printSelectionCommand() {
 
   //业务实现部分 返回此对象
   //extension主入口导入此命令模块 注册即可使用
