@@ -22,6 +22,10 @@
         "command": "termrepoplugin-vscode.addWord",
         "title": "收藏选中单词",
         "category": "TermRepoPlugin"
+      },
+      {
+        "command": "termrepoplugin-vscode.showAllWords",
+        "title": "显示所有单词"
       }
     ],
     "menus": {
@@ -35,6 +39,11 @@
           "command": "termrepoplugin-vscode.addWord",
           "group": "navigation",
           "when": "editorHasSelection"
+        },
+        {
+          "command": "termrepoplugin-vscode.showAllWords",
+          "group": "navigation",
+          "when": "true"
         }
       ]
     },

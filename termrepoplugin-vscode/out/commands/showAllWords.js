@@ -33,28 +33,30 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.printSelectionCommand = printSelectionCommand;
+exports.showAllWordsCommand = showAllWordsCommand;
 const vscode = __importStar(require("vscode"));
-//创建打印选中命令模块并导出
-function printSelectionCommand() {
-    //业务实现部分 返回此对象
-    //extension主入口导入此命令模块 注册即可使用
-    return vscode.commands.registerCommand('termrepoplugin-vscode.printSelection', async () => {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            vscode.window.showWarningMessage('没有活动的编辑器');
+/**
+ * 创建“显示所有单词”命令。
+ * 通过 QuickPick 列出所有已收藏的单词，点击可复制到剪贴板。
+ *
+ * @param storage - 存储管理器实例
+ * @returns 命令的 Disposable 对象
+ */
+function showAllWordsCommand(storage) {
+    return vscode.commands.registerCommand('termrepoplugin-vscode.showAllWords', async () => {
+        const words = storage.getAllWords();
+        if (words.length === 0) {
+            vscode.window.showInformationMessage('📭 暂无收藏的单词');
             return;
         }
-        const selection = editor.selection;
-        if (selection.isEmpty) {
-            vscode.window.showWarningMessage('没有选中任何文本');
-            return;
+        const selected = await vscode.window.showQuickPick(words, {
+            placeHolder: `共 ${words.length} 个单词，点击复制到剪贴板`,
+            ignoreFocusOut: true,
+        });
+        if (selected) {
+            await vscode.env.clipboard.writeText(selected);
+            vscode.window.showInformationMessage(`✅ 已复制“${selected}”到剪贴板`);
         }
-        const selectedText = editor.document.getText(selection);
-        // 打印到控制台
-        console.log('选中的内容:', selectedText);
-        // 弹出消息框显示
-        vscode.window.showInformationMessage(`选中内容: ${selectedText}`);
     });
 }
-//# sourceMappingURL=printSelection.js.map
+//# sourceMappingURL=showAllWords.js.map

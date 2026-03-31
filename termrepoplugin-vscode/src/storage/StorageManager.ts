@@ -92,7 +92,7 @@ export class StorageManager {
    * @param word - 要删除的单词
    * @returns 如果删除成功返回 true，单词不存在返回 false
    */
-  
+
   async deleteWord(word: string): Promise<boolean> {
     const index = this.words.indexOf(word);
     if (index === -1) { return false; }

@@ -35,6 +35,25 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.addWordCommand = addWordCommand;
 const vscode = __importStar(require("vscode"));
+/**
+ * 创建一个用于收藏单词的 VS Code 命令。
+ *
+ * 命令 ID: `termrepoplugin-vscode.addWord`
+ *
+ * 功能描述：
+ * - 优先获取当前活动编辑器的选中文本作为要收藏的单词。
+ * - 如果没有选中文本，则弹出输入框让用户手动输入。
+ * - 使用 `StorageManager` 保存单词（自动去重），并显示相应的提示消息。
+ *
+ * @param storage - 存储管理器实例，用于保存单词数据。
+ * @returns 返回一个 `vscode.Disposable` 对象，可用于在扩展停用时注销命令。
+ *
+ * @example
+ * ```typescript
+ * const command = addWordCommand(storage);
+ * context.subscriptions.push(command);
+ * ```
+ */
 function addWordCommand(storage) {
     return vscode.commands.registerCommand('termrepoplugin-vscode.addWord', async () => {
         // 1. 忽略任何传入的参数，直接获取活动编辑器的选中文本

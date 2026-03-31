@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-  
+
 //创建打印选中命令模块并导出
 export function printSelectionCommand() {
 
@@ -25,8 +25,6 @@ export function printSelectionCommand() {
     // 弹出消息框显示
     vscode.window.showInformationMessage(`选中内容: ${selectedText}`);
 
-    // 保存到全局存储文件
-    // await addWord(selectedText);
   });
 }
 

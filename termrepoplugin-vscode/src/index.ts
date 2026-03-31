@@ -5,4 +5,5 @@
 
 export { StorageManager } from './storage/StorageManager';
 export { addWordCommand, printSelectionCommand } from './commands';
+export { showAllWordsCommand } from './commands';
 // 如果还有其他需要公开的模块，继续导出
