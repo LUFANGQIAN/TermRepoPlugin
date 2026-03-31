@@ -1,0 +1,19 @@
+{
+  "entryPoints": [
+    "src/extension.ts",
+    "src/index.ts"
+  ],
+  "out": "docs",
+  "lang": "zh",
+  "exclude": [
+    "**/*.test.ts",
+    "**/node_modules/**",
+    "out/**"
+  ],
+  "includeVersion": true,
+  "name": "TermRepoPlugin-VSCode",
+  "readme": "none",
+  "plugin": [
+    "@saber2pr/typedoc-plugin-localization-zh"
+  ],
+}

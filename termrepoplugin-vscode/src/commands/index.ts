@@ -2,7 +2,10 @@ import * as vscode from 'vscode';
 import { StorageManager } from '../storage/StorageManager';
 import { printSelectionCommand } from './printSelection';
 import { addWordCommand } from './addWord';
-// 将来可以继续导入更多命令...
+
+
+export { addWordCommand } from './addWord';
+export { printSelectionCommand } from './printSelection';
 
 /**
  * 注册所有命令，并将它们的 disposable 对象添加到 context.subscriptions。
