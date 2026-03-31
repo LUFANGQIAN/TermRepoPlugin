@@ -8,6 +8,7 @@
 import * as vscode from 'vscode';
 import { registerCommands } from './commands';
 import { StorageManager } from './storage/StorageManager';
+import { initWordTreeView } from './views';  // 导入视图初始化函数
 
 /**
  * 扩展激活时调用的入口函数。
@@ -22,10 +23,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
 	// 1. 初始化存储管理器
 	const storage = new StorageManager(context.globalStorageUri.fsPath);
-	await storage.init();  // 确保目录存在并加载数据
+	await storage.init();
 
-	// 2. 注册所有命令（依赖注入）
-	registerCommands(context, storage);
+	// 2. 初始化树视图（底部面板）
+	const treeProvider = initWordTreeView(context, storage);
+
+	// 3. 注册命令，并将 treeProvider 传递给需要刷新视图的命令
+	registerCommands(context, storage, treeProvider);
 }
 
 /**

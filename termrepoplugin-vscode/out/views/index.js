@@ -33,43 +33,20 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.printSelectionCommand = printSelectionCommand;
+exports.initWordTreeView = initWordTreeView;
+// src/views/index.ts
 const vscode = __importStar(require("vscode"));
+const wordTreeProvider_1 = require("./wordTreeProvider");
 /**
- * 创建一个用于打印选中内容的调试命令。
- *
- * 命令 ID: `termrepoplugin-vscode.printSelection`
- *
- * 功能描述：
- * - 获取当前活动编辑器中被选中的文本。
- * - 如果没有活动编辑器或未选中任何文本，则显示相应的警告消息。
- * - 将选中的文本输出到控制台，并弹窗提示。
- *
- * @returns 返回一个 `vscode.Disposable` 对象，用于注册命令。
- *
- * @example
- * ```typescript
- * // 在扩展激活时注册命令
- * context.subscriptions.push(printSelectionCommand());
- * ```
+ * 初始化底部面板的单词列表树视图。
+ * @param context - 扩展上下文，用于注册视图
+ * @param storage - 存储管理器实例
+ * @returns WordTreeProvider 实例，可用于刷新视图或监听事件
  */
-function printSelectionCommand() {
-    return vscode.commands.registerCommand('termrepoplugin-vscode.printSelection', async () => {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            vscode.window.showWarningMessage('没有活动的编辑器');
-            return;
-        }
-        const selection = editor.selection;
-        if (selection.isEmpty) {
-            vscode.window.showWarningMessage('没有选中任何文本');
-            return;
-        }
-        const selectedText = editor.document.getText(selection);
-        // 打印到控制台
-        console.log('选中的内容:', selectedText);
-        // 弹出消息框显示
-        vscode.window.showInformationMessage(`选中内容: ${selectedText}`);
-    });
+function initWordTreeView(context, storage) {
+    console.log('Registering tree data provider for termRepoWordList');
+    const treeProvider = new wordTreeProvider_1.WordTreeProvider(storage);
+    vscode.window.registerTreeDataProvider('termRepoWordList', treeProvider);
+    return treeProvider;
 }
-//# sourceMappingURL=printSelection.js.map
+//# sourceMappingURL=index.js.map

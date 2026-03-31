@@ -33,43 +33,32 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.printSelectionCommand = printSelectionCommand;
+exports.copyWordCommand = copyWordCommand;
 const vscode = __importStar(require("vscode"));
+const clipboard_1 = require("../utils/clipboard");
 /**
- * 创建一个用于打印选中内容的调试命令。
+ * 创建“复制单词”命令。
  *
- * 命令 ID: `termrepoplugin-vscode.printSelection`
- *
- * 功能描述：
- * - 获取当前活动编辑器中被选中的文本。
- * - 如果没有活动编辑器或未选中任何文本，则显示相应的警告消息。
- * - 将选中的文本输出到控制台，并弹窗提示。
+ * 该命令接收一个单词参数，将其写入系统剪贴板。
+ * 通常由树视图中的单词项调用，传入对应的单词字符串。
+ * 通过clipboard.ts工具中的copyToClipboard方法实现
  *
  * @returns 返回一个 `vscode.Disposable` 对象，用于注册命令。
  *
  * @example
  * ```typescript
- * // 在扩展激活时注册命令
- * context.subscriptions.push(printSelectionCommand());
+ * // 注册命令
+ * context.subscriptions.push(copyWordCommand());
  * ```
  */
-function printSelectionCommand() {
-    return vscode.commands.registerCommand('termrepoplugin-vscode.printSelection', async () => {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            vscode.window.showWarningMessage('没有活动的编辑器');
+function copyWordCommand() {
+    return vscode.commands.registerCommand('termrepoplugin-vscode.copyWord', async (word) => {
+        // 参数校验：如果未传入单词或单词为空，则提示错误并返回
+        if (!word || typeof word !== 'string') {
+            vscode.window.showErrorMessage('无效的单词：无法复制空内容');
             return;
         }
-        const selection = editor.selection;
-        if (selection.isEmpty) {
-            vscode.window.showWarningMessage('没有选中任何文本');
-            return;
-        }
-        const selectedText = editor.document.getText(selection);
-        // 打印到控制台
-        console.log('选中的内容:', selectedText);
-        // 弹出消息框显示
-        vscode.window.showInformationMessage(`选中内容: ${selectedText}`);
+        await (0, clipboard_1.copyToClipboard)(word);
     });
 }
-//# sourceMappingURL=printSelection.js.map
+//# sourceMappingURL=copyWord.js.map

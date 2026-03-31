@@ -26,6 +26,10 @@
       {
         "command": "termrepoplugin-vscode.showAllWords",
         "title": "显示所有单词"
+      },
+      {
+        "command": "termrepoplugin-vscode.copyWord",
+        "title": "复制单词"
       }
     ],
     "menus": {
@@ -53,7 +57,25 @@
         "key": "alt+q",
         "when": "editorTextFocus && editorHasSelection"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "termRepoPanel",
+          "title": "词库",
+          "icon": "$(library)"
+        }
+      ]
+    },
+    "views": {
+      "termRepoPanel": [
+        {
+          "id": "termRepoWordList",
+          "name": "单词列表",
+          "icon": "$(library)"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
