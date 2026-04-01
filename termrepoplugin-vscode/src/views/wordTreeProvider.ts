@@ -64,11 +64,8 @@ export class WordTreeProvider implements vscode.TreeDataProvider<WordTreeItem> {
    * @param element - 父节点（根节点时为 undefined）
    * @returns Promise 包装的单词树项数组
    */
-  getChildren(element?: WordTreeItem): Thenable<WordTreeItem[]> {
-    if (element) {
-      return Promise.resolve([]); // 单词项没有子节点
-    }
-    const words = this.storage.getAllWords();
-    return Promise.resolve(words.map(w => new WordTreeItem(w)));
+  getChildren(): WordTreeItem[] {
+    const terms = this.storage.getAllTerms();
+    return terms.map(term => new WordTreeItem(term.originalText));
   }
 }

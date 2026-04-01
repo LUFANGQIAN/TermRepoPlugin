@@ -29,7 +29,9 @@ export function showAllWordsCommand(storage: StorageManager) {
   return vscode.commands.registerCommand(
     'termrepoplugin-vscode.showAllWords',
     async () => {
-      const words = storage.getAllWords();
+      const allTerms = storage.getAllTerms();
+      const words = allTerms.map(t => t.originalText);
+      // 然后用 words 列表展示 QuickPick
       if (words.length === 0) {
         vscode.window.showInformationMessage('📭 暂无收藏的单词');
         return;

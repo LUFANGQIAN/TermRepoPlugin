@@ -2,102 +2,97 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { ensureStorageDir } from './ensureStorageDir';
+import { TermEntry } from '../types';
 
-/**
- * 管理单词存储的类，负责读写全局存储目录下的 words.json 文件，
- * 并提供内存缓存以减少文件 I/O。
- *
- * @example
- * ```typescript
- * const storage = new StorageManager(context.globalStorageUri.fsPath);
- * await storage.init();
- * await storage.addWord('hello');
- * const allWords = storage.getAllWords();
- * ```
- */
+interface StorageData {
+  version: number;
+  terms: Record<string, TermEntry>;
+  metadata?: {
+    lastSyncTime?: number;
+  };
+}
+
 export class StorageManager {
-  private readonly wordsFilePath: string;
-  private words: string[] = [];
+  private readonly dataFilePath: string;
+  private terms: Map<string, TermEntry> = new Map();
 
-  /**
-   * 创建 StorageManager 实例
-   * @param storagePath - 全局存储目录的绝对路径，通常从 context.globalStorageUri.fsPath 获取
-   */
   constructor(storagePath: string) {
-    this.wordsFilePath = path.join(storagePath, 'words.json');
+    this.dataFilePath = path.join(storagePath, 'termrepo-data.json');
   }
 
-  /**
-   * 初始化存储：确保存储目录存在，并加载已有单词列表到内存。
-   * 必须在扩展激活时调用一次。
-   */
   async init(): Promise<void> {
-    await ensureStorageDir(path.dirname(this.wordsFilePath));
+    await ensureStorageDir(path.dirname(this.dataFilePath));
     await this.load();
   }
 
-  /**
-   * 从 words.json 加载单词列表到内存。
-   * 如果文件不存在或解析失败，则 words 置为空数组。
-   */
   private async load(): Promise<void> {
     try {
-      const data = await fs.readFile(this.wordsFilePath, 'utf-8');
-      this.words = JSON.parse(data);
-    } catch {
-      this.words = [];
+      const data = await fs.readFile(this.dataFilePath, 'utf-8');
+      const parsed = JSON.parse(data) as StorageData;
+      if (parsed.version === 1 && parsed.terms) {
+        this.terms = new Map(Object.entries(parsed.terms));
+        console.log(`[StorageManager] 加载成功，共 ${this.terms.size} 个术语`);
+      } else {
+        this.terms = new Map();
+        await this.save();
+      }
+    } catch (err: any) {
+      if (err.code === 'ENOENT') {
+        this.terms = new Map();
+        await this.save();
+      } else {
+        console.error('[StorageManager] 读取存储文件失败:', err);
+        this.terms = new Map();
+      }
     }
   }
 
-  /**
-   * 将当前 words 数组保存到 words.json 文件。
-   */
   private async save(): Promise<void> {
-    const data = JSON.stringify(this.words, null, 2);
-    await fs.writeFile(this.wordsFilePath, data, 'utf-8');
+    const data: StorageData = {
+      version: 1,
+      terms: Object.fromEntries(this.terms),
+    };
+    await fs.writeFile(this.dataFilePath, JSON.stringify(data, null, 2), 'utf-8');
+    console.log('[StorageManager] 数据已保存到文件', this.dataFilePath);
   }
 
-  /**
-   * 添加一个新单词（自动去重）。
-   * @param word - 要添加的单词
-   * @returns 如果单词已存在返回 false，否则返回 true
-   */
-  async addWord(word: string): Promise<boolean> {
-    if (this.words.includes(word)) {
+  // ---------------------- 核心 API ----------------------
+
+  async addTerm(term: TermEntry): Promise<boolean> {
+    const existing = Array.from(this.terms.values()).some(t => t.originalText === term.originalText);
+    if (existing) {
+      console.log(`[StorageManager] 术语已存在，跳过添加: ${term.originalText}`);
       return false;
     }
-    this.words.push(word);
+    this.terms.set(term.id, term);
     await this.save();
+    console.log('[StorageManager] 已添加术语:', JSON.stringify(term, null, 2));
     return true;
   }
 
-  /**
-   * 获取所有单词的副本。
-   * @returns 单词数组（不影响内部缓存）
-   */
-  getAllWords(): string[] {
-    return [...this.words];
+  getAllTerms(): TermEntry[] {
+    return Array.from(this.terms.values());
   }
 
-  /**
-   * 检查单词是否已存在。
-   * @param word - 要查找的单词
-   */
-  hasWord(word: string): boolean {
-    return this.words.includes(word);
+  getTerm(id: string): TermEntry | undefined {
+    return this.terms.get(id);
   }
 
-  /**
-   * 删除指定单词。
-   * @param word - 要删除的单词
-   * @returns 如果删除成功返回 true，单词不存在返回 false
-   */
-
-  async deleteWord(word: string): Promise<boolean> {
-    const index = this.words.indexOf(word);
-    if (index === -1) { return false; }
-    this.words.splice(index, 1);
+  async updateTerm(id: string, updates: Partial<TermEntry>): Promise<boolean> {
+    const term = this.terms.get(id);
+    if (!term) {return false;}
+    const updated = { ...term, ...updates, updatedAt: Date.now() };
+    this.terms.set(id, updated);
     await this.save();
+    console.log('[StorageManager] 已更新术语:', id);
+    return true;
+  }
+
+  async deleteTerm(id: string): Promise<boolean> {
+    if (!this.terms.has(id)) {return false;}
+    this.terms.delete(id);
+    await this.save();
+    console.log('[StorageManager] 已删除术语:', id);
     return true;
   }
 }

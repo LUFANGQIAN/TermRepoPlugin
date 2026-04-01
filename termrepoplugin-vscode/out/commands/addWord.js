@@ -35,7 +35,8 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.addWordCommand = addWordCommand;
 const vscode = __importStar(require("vscode"));
-const clipboard_1 = require("../utils/clipboard"); // 导入复制工具函数
+const clipboard_1 = require("../utils/clipboard");
+const termUtils_1 = require("../utils/termUtils"); // 新增：创建术语对象的工具函数
 /**
  * 创建一个用于收藏单词的 VS Code 命令。
  *
@@ -63,24 +64,31 @@ const clipboard_1 = require("../utils/clipboard"); // 导入复制工具函数
  */
 function addWordCommand(storage, treeProvider) {
     return vscode.commands.registerCommand('termrepoplugin-vscode.addWord', async () => {
-        // 1. 忽略任何传入的参数，直接获取活动编辑器的选中文本
+        // 1. 获取活动编辑器和选中文本
         let word;
         const editor = vscode.window.activeTextEditor;
+        let filePath;
         if (editor && !editor.selection.isEmpty) {
             word = editor.document.getText(editor.selection);
+            // 获取当前文件的相对路径（相对于工作区根）
+            filePath = vscode.workspace.asRelativePath(editor.document.uri);
         }
-        // 2. 如果没有选中文本，则弹出输入框让用户输入
+        // 2. 如果没有选中文本，则弹出输入框让用户输入（此时无法记录文件路径）
         if (!word) {
             word = await vscode.window.showInputBox({
                 prompt: '请输入要收藏的单词',
                 placeHolder: '例如: hello world'
             });
+            // 通过输入框添加的单词没有关联文件路径
+            filePath = undefined;
         }
         if (!word) {
             return;
         }
-        // 3. 保存单词
-        const added = await storage.addWord(word);
+        // 3. 创建完整的术语条目
+        const newTerm = (0, termUtils_1.createTermEntry)(word, filePath);
+        // 4. 保存术语
+        const added = await storage.addTerm(newTerm);
         if (added) {
             treeProvider.refresh(); // 刷新树视图
             await (0, clipboard_1.copyToClipboard)(word, false); // 自动复制到剪贴板，不显示额外通知

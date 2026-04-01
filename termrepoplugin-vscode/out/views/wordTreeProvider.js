@@ -98,12 +98,9 @@ class WordTreeProvider {
      * @param element - 父节点（根节点时为 undefined）
      * @returns Promise 包装的单词树项数组
      */
-    getChildren(element) {
-        if (element) {
-            return Promise.resolve([]); // 单词项没有子节点
-        }
-        const words = this.storage.getAllWords();
-        return Promise.resolve(words.map(w => new WordTreeItem(w)));
+    getChildren() {
+        const terms = this.storage.getAllTerms();
+        return terms.map(term => new WordTreeItem(term.originalText));
     }
 }
 exports.WordTreeProvider = WordTreeProvider;
