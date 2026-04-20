@@ -1,13 +1,15 @@
 import * as vscode from 'vscode';
-import { MyWebviewProvider } from "./MyWebviewProvider";
+import { StorageManager } from '../storage/StorageManager';
+import { MyWebviewProvider } from './MyWebviewProvider';
 
-/**
- * 注册 Webview 视图（供 extension.ts 调用）
- * @param context 插件上下文
- */
-export function registerWebviewView(context: vscode.ExtensionContext) {
-  const provider = new MyWebviewProvider(context.extensionUri);
+export function registerWebviewView(
+  context: vscode.ExtensionContext,
+  storage: StorageManager
+): void {
+  const provider = new MyWebviewProvider(context.extensionUri, storage);
   context.subscriptions.push(
+    storage,
+    provider,
     vscode.window.registerWebviewViewProvider('myWebview', provider)
   );
 }

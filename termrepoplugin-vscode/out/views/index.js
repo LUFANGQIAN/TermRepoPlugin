@@ -36,12 +36,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerWebviewView = registerWebviewView;
 const vscode = __importStar(require("vscode"));
 const MyWebviewProvider_1 = require("./MyWebviewProvider");
-/**
- * 注册 Webview 视图（供 extension.ts 调用）
- * @param context 插件上下文
- */
-function registerWebviewView(context) {
-    const provider = new MyWebviewProvider_1.MyWebviewProvider(context.extensionUri);
-    context.subscriptions.push(vscode.window.registerWebviewViewProvider('myWebview', provider));
+function registerWebviewView(context, storage) {
+    const provider = new MyWebviewProvider_1.MyWebviewProvider(context.extensionUri, storage);
+    context.subscriptions.push(storage, provider, vscode.window.registerWebviewViewProvider('myWebview', provider));
 }
 //# sourceMappingURL=index.js.map
