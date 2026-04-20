@@ -1,7 +1,7 @@
 {
   "name": "termrepoplugin-vscode",
   "displayName": "TermRepoPlugin-VSCode",
-  "description": "一键收藏名字 特殊符号触发模糊搜索复用！",
+  "description": "一键收藏术语，并通过固定符号快速搜索复用词库单词。",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.110.0"
@@ -9,7 +9,15 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:termrepoplugin-vscode.addWord",
+    "onCommand:termrepoplugin-vscode.showAllWords",
+    "onCommand:termrepoplugin-vscode.exportWords",
+    "onCommand:termrepoplugin-vscode.importWords",
+    "onView:myWebview",
+    "onLanguage:*"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "viewsContainers": {
@@ -27,7 +35,7 @@
           "icon": "$(book)",
           "type": "webview",
           "id": "myWebview",
-          "name": "我的Webview面板"
+          "name": "词库管理"
         }
       ]
     },
@@ -44,11 +52,23 @@
       },
       {
         "command": "termrepoplugin-vscode.showAllWords",
-        "title": "显示所有单词"
+        "title": "显示所有单词",
+        "category": "TermRepoPlugin"
       },
       {
         "command": "termrepoplugin-vscode.copyWord",
-        "title": "复制单词"
+        "title": "复制单词",
+        "category": "TermRepoPlugin"
+      },
+      {
+        "command": "termrepoplugin-vscode.exportWords",
+        "title": "导出单词库",
+        "category": "TermRepoPlugin"
+      },
+      {
+        "command": "termrepoplugin-vscode.importWords",
+        "title": "导入单词库",
+        "category": "TermRepoPlugin"
       }
     ],
     "menus": {
@@ -67,6 +87,16 @@
           "command": "termrepoplugin-vscode.showAllWords",
           "group": "navigation",
           "when": "true"
+        },
+        {
+          "command": "termrepoplugin-vscode.exportWords",
+          "group": "navigation",
+          "when": "true"
+        },
+        {
+          "command": "termrepoplugin-vscode.importWords",
+          "group": "navigation",
+          "when": "true"
         }
       ]
     },
@@ -76,7 +106,19 @@
         "key": "alt+q",
         "when": "editorTextFocus && editorHasSelection"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "TermRepoPlugin",
+      "properties": {
+        "termrepoplugin-vscode.triggerSymbol": {
+          "type": "string",
+          "default": ";",
+          "minLength": 1,
+          "maxLength": 1,
+          "description": "输入该符号后，可从单词库中搜索并替换单词。"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

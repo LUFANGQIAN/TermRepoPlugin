@@ -16,11 +16,15 @@ import { printSelectionCommand } from './printSelection';
 import { addWordCommand } from './addWord';
 import { showAllWordsCommand } from './showAllWords';
 import { copyWordCommand } from './copyWord';
+import { exportWordsCommand } from './exportWords';
+import { importWordsCommand } from './importWords';
 
 export { addWordCommand } from './addWord';
 export { printSelectionCommand } from './printSelection';
 export { showAllWordsCommand } from './showAllWords';
 export { copyWordCommand } from './copyWord';
+export { exportWordsCommand } from './exportWords';
+export { importWordsCommand } from './importWords';
 
 /**
  * 注册所有命令，并将它们的 disposable 对象添加到 context.subscriptions。
@@ -42,6 +46,8 @@ export function registerCommands(
     showAllWordsCommand(storage),
     addWordCommand(storage),
     copyWordCommand(),
+    exportWordsCommand(storage),
+    importWordsCommand(storage),
   ];
 
   // 一次性将所有命令添加到订阅中

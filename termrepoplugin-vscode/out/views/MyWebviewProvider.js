@@ -36,6 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MyWebviewProvider = void 0;
 const crypto_1 = require("crypto");
 const vscode = __importStar(require("vscode"));
+const termCompletionProvider_1 = require("../providers/termCompletionProvider");
 class MyWebviewProvider {
     constructor(extensionUri, storage) {
         this.extensionUri = extensionUri;
@@ -47,6 +48,10 @@ class MyWebviewProvider {
         this.disposables = [];
         this.disposables.push(this.storage.onDidChange(() => {
             void this.refresh();
+        }), vscode.workspace.onDidChangeConfiguration((event) => {
+            if (event.affectsConfiguration('termrepoplugin-vscode.triggerSymbol')) {
+                void this.refresh();
+            }
         }));
     }
     dispose() {
@@ -91,6 +96,15 @@ class MyWebviewProvider {
                 this.mode = 'edit';
                 this.selectedId = message.id;
                 await this.refresh();
+                return;
+            case 'exportWords':
+                await vscode.commands.executeCommand('termrepoplugin-vscode.exportWords');
+                return;
+            case 'importWords':
+                await vscode.commands.executeCommand('termrepoplugin-vscode.importWords');
+                return;
+            case 'openSettings':
+                await vscode.commands.executeCommand('workbench.action.openSettings', 'termrepoplugin-vscode.triggerSymbol');
                 return;
             case 'saveTerm':
                 await this.saveTerm(message.payload);
@@ -259,6 +273,7 @@ class MyWebviewProvider {
             searchQuery: this.searchQuery,
             page: this.page,
             mode: this.mode,
+            triggerCharacter: (0, termCompletionProvider_1.getTriggerCharacter)(),
         };
     }
     async refresh() {
@@ -307,8 +322,10 @@ class MyWebviewProvider {
       --button-icon-size: 22px;
       --danger: var(--vscode-errorForeground);
       --row-hover: var(--vscode-list-hoverBackground);
-      --row-active: var(--vscode-list-activeSelectionBackground);
-      --row-active-fg: var(--vscode-list-activeSelectionForeground);
+      --menu-bg: var(--vscode-menu-background, var(--vscode-editorWidget-background));
+      --menu-fg: var(--vscode-menu-foreground, var(--vscode-foreground));
+      --menu-border: var(--vscode-menu-border, var(--vscode-panel-border));
+      --menu-hover: var(--vscode-list-hoverBackground);
     }
 
     * {
@@ -398,9 +415,13 @@ class MyWebviewProvider {
       flex-direction: column;
     }
 
-    .search {
+    .search-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 6px;
       padding: 6px 8px;
       border-bottom: 1px solid var(--border);
+      position: relative;
     }
 
     .input,
@@ -436,6 +457,8 @@ class MyWebviewProvider {
       height: 24px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      gap: 8px;
       padding: 0 8px;
       color: var(--vscode-descriptionForeground);
       border-bottom: 1px solid var(--border);
@@ -462,12 +485,6 @@ class MyWebviewProvider {
       background: var(--row-hover);
     }
 
-    .word-card.active {
-      color: var(--row-active-fg);
-      background: var(--row-active);
-      border-left-color: var(--vscode-focusBorder);
-    }
-
     .word-main {
       min-width: 0;
       cursor: pointer;
@@ -491,10 +508,6 @@ class MyWebviewProvider {
       font-size: 11px;
     }
 
-    .word-card.active .word-note {
-      color: color-mix(in srgb, var(--row-active-fg) 76%, transparent);
-    }
-
     .word-meta {
       display: flex;
       gap: 4px;
@@ -510,8 +523,7 @@ class MyWebviewProvider {
       opacity: 0.74;
     }
 
-    .word-card:hover .word-actions,
-    .word-card.active .word-actions {
+    .word-card:hover .word-actions {
       opacity: 1;
     }
 
@@ -520,6 +532,35 @@ class MyWebviewProvider {
       color: var(--vscode-descriptionForeground);
       text-align: center;
       font-size: 12px;
+    }
+
+    .menu {
+      position: absolute;
+      top: 34px;
+      right: 8px;
+      width: 156px;
+      padding: 4px;
+      border: 1px solid var(--menu-border);
+      background: var(--menu-bg);
+      color: var(--menu-fg);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.18);
+      z-index: 10;
+    }
+
+    .menu button {
+      width: 100%;
+      height: 26px;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      text-align: left;
+      padding: 0 8px;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .menu button:hover {
+      background: var(--menu-hover);
     }
 
     .detail {
@@ -624,6 +665,10 @@ class MyWebviewProvider {
       color: var(--danger);
     }
 
+    .mono {
+      font-family: var(--vscode-editor-font-family, monospace);
+    }
+
     .hidden {
       display: none !important;
     }
@@ -639,18 +684,28 @@ class MyWebviewProvider {
         </div>
       </header>
 
-      <div class="search">
+      <div class="search-row">
         <input id="searchInput" class="input" type="search" placeholder="搜索单词、备注、标签" />
+        <button id="menuButton" class="icon-button" title="插件配置" type="button">⋯</button>
+        <div id="configMenu" class="menu hidden">
+          <button id="importButton" type="button">导入单词库</button>
+          <button id="exportButton" type="button">导出单词库</button>
+          <button id="settingsButton" type="button">插件设置</button>
+        </div>
       </div>
 
-      <div id="summary" class="summary">0 个单词</div>
+      <div id="summary" class="summary">
+        <span id="summaryText">0 个单词</span>
+        <span id="triggerHint" class="mono"></span>
+      </div>
+
       <div id="wordList" class="word-list"></div>
     </section>
 
     <section id="detailPage" class="content hidden">
       <header class="titlebar">
         <div class="actions">
-          <button id="backButton" class="icon-button" title="返回列表" type="button">‹</button>
+          <button id="backButton" class="icon-button" title="返回列表" type="button"><</button>
         </div>
         <h1 id="detailTitle">编辑单词</h1>
         <div class="actions">
@@ -664,7 +719,7 @@ class MyWebviewProvider {
 
           <div class="field">
             <label for="wordInput">单词</label>
-            <input id="wordInput" class="input" type="text" placeholder="indexRouter" />
+            <input id="wordInput" class="input mono" type="text" placeholder="indexRouter" />
           </div>
 
           <div class="field">
@@ -674,7 +729,7 @@ class MyWebviewProvider {
 
           <div class="field">
             <label for="filePathInput">来源文件</label>
-            <input id="filePathInput" class="input" type="text" placeholder="src/example.ts" />
+            <input id="filePathInput" class="input mono" type="text" placeholder="src/example.ts" />
           </div>
 
           <div class="field">
@@ -754,14 +809,21 @@ class MyWebviewProvider {
       searchQuery: "",
       page: "list",
       mode: null,
+      triggerCharacter: ";",
     };
 
     const listPage = document.getElementById("listPage");
     const detailPage = document.getElementById("detailPage");
     const addButton = document.getElementById("addButton");
+    const menuButton = document.getElementById("menuButton");
+    const configMenu = document.getElementById("configMenu");
+    const importButton = document.getElementById("importButton");
+    const exportButton = document.getElementById("exportButton");
+    const settingsButton = document.getElementById("settingsButton");
     const backButton = document.getElementById("backButton");
     const searchInput = document.getElementById("searchInput");
-    const summary = document.getElementById("summary");
+    const summaryText = document.getElementById("summaryText");
+    const triggerHint = document.getElementById("triggerHint");
     const wordList = document.getElementById("wordList");
     const detailTitle = document.getElementById("detailTitle");
     const detailDeleteIcon = document.getElementById("detailDeleteIcon");
@@ -815,6 +877,7 @@ class MyWebviewProvider {
     function showPage(page) {
       listPage.classList.toggle("hidden", page !== "list");
       detailPage.classList.toggle("hidden", page !== "detail");
+      configMenu.classList.add("hidden");
     }
 
     function createPartElement(part = {}) {
@@ -878,12 +941,13 @@ class MyWebviewProvider {
 
     function renderList() {
       wordList.innerHTML = "";
-      summary.textContent = state.searchQuery
+      summaryText.textContent = state.searchQuery
         ? state.terms.length + " 个匹配结果"
         : state.terms.length + " 个单词";
+      triggerHint.textContent = "替换前缀: " + state.triggerCharacter;
 
       if (state.terms.length === 0) {
-        wordList.innerHTML = '<div class="empty">暂无单词。点击右上角 + 新增。</div>';
+        wordList.innerHTML = '<div class="empty">暂无单词。点击右上角 + 新增，或从菜单导入。</div>';
         return;
       }
 
@@ -964,6 +1028,7 @@ class MyWebviewProvider {
       state.searchQuery = nextState.searchQuery || "";
       state.page = nextState.page || "list";
       state.mode = nextState.mode || null;
+      state.triggerCharacter = nextState.triggerCharacter || ";";
 
       if (document.activeElement !== searchInput) {
         searchInput.value = state.searchQuery;
@@ -984,6 +1049,31 @@ class MyWebviewProvider {
       if (message.type === "notification") {
         setStatus(message.payload.message, message.payload.kind);
       }
+    });
+
+    menuButton.addEventListener("click", () => {
+      configMenu.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!configMenu.contains(event.target) && event.target !== menuButton) {
+        configMenu.classList.add("hidden");
+      }
+    });
+
+    importButton.addEventListener("click", () => {
+      configMenu.classList.add("hidden");
+      vscode.postMessage({ command: "importWords" });
+    });
+
+    exportButton.addEventListener("click", () => {
+      configMenu.classList.add("hidden");
+      vscode.postMessage({ command: "exportWords" });
+    });
+
+    settingsButton.addEventListener("click", () => {
+      configMenu.classList.add("hidden");
+      vscode.postMessage({ command: "openSettings" });
     });
 
     addButton.addEventListener("click", () => {

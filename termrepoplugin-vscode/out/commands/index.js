@@ -11,12 +11,14 @@
  * - `copyWordCommand`: 将指定单词复制到剪贴板
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.copyWordCommand = exports.showAllWordsCommand = exports.printSelectionCommand = exports.addWordCommand = void 0;
+exports.importWordsCommand = exports.exportWordsCommand = exports.copyWordCommand = exports.showAllWordsCommand = exports.printSelectionCommand = exports.addWordCommand = void 0;
 exports.registerCommands = registerCommands;
 const printSelection_1 = require("./printSelection");
 const addWord_1 = require("./addWord");
 const showAllWords_1 = require("./showAllWords");
 const copyWord_1 = require("./copyWord");
+const exportWords_1 = require("./exportWords");
+const importWords_1 = require("./importWords");
 var addWord_2 = require("./addWord");
 Object.defineProperty(exports, "addWordCommand", { enumerable: true, get: function () { return addWord_2.addWordCommand; } });
 var printSelection_2 = require("./printSelection");
@@ -25,6 +27,10 @@ var showAllWords_2 = require("./showAllWords");
 Object.defineProperty(exports, "showAllWordsCommand", { enumerable: true, get: function () { return showAllWords_2.showAllWordsCommand; } });
 var copyWord_2 = require("./copyWord");
 Object.defineProperty(exports, "copyWordCommand", { enumerable: true, get: function () { return copyWord_2.copyWordCommand; } });
+var exportWords_2 = require("./exportWords");
+Object.defineProperty(exports, "exportWordsCommand", { enumerable: true, get: function () { return exportWords_2.exportWordsCommand; } });
+var importWords_2 = require("./importWords");
+Object.defineProperty(exports, "importWordsCommand", { enumerable: true, get: function () { return importWords_2.importWordsCommand; } });
 /**
  * 注册所有命令，并将它们的 disposable 对象添加到 context.subscriptions。
  *
@@ -41,6 +47,8 @@ function registerCommands(context, storage) {
         (0, showAllWords_1.showAllWordsCommand)(storage),
         (0, addWord_1.addWordCommand)(storage),
         (0, copyWord_1.copyWordCommand)(),
+        (0, exportWords_1.exportWordsCommand)(storage),
+        (0, importWords_1.importWordsCommand)(storage),
     ];
     // 一次性将所有命令添加到订阅中
     context.subscriptions.push(...commands);
