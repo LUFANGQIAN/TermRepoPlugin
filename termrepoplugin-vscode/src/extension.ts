@@ -15,7 +15,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 	registerCommands(context, storage);
 
 	console.log('测试回滚');
-	console.log('测试此行代码如何使用git工具回滚,如若成功,此行代码应当删除');
 
 
 	// 注册 Webview 侧边栏面板
