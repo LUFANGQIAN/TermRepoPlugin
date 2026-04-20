@@ -17,7 +17,7 @@
  * 注意：内部模块的具体实现细节请参考各自的源文件。
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.copyToClipboard = exports.initWordTreeView = exports.WordTreeItem = exports.WordTreeProvider = exports.showAllWordsCommand = exports.copyWordCommand = exports.printSelectionCommand = exports.addWordCommand = exports.StorageManager = void 0;
+exports.copyToClipboard = exports.showAllWordsCommand = exports.copyWordCommand = exports.printSelectionCommand = exports.addWordCommand = exports.StorageManager = void 0;
 // 存储模块
 var StorageManager_1 = require("./storage/StorageManager");
 Object.defineProperty(exports, "StorageManager", { enumerable: true, get: function () { return StorageManager_1.StorageManager; } });
@@ -28,11 +28,7 @@ Object.defineProperty(exports, "printSelectionCommand", { enumerable: true, get:
 Object.defineProperty(exports, "copyWordCommand", { enumerable: true, get: function () { return commands_1.copyWordCommand; } });
 Object.defineProperty(exports, "showAllWordsCommand", { enumerable: true, get: function () { return commands_1.showAllWordsCommand; } });
 // 视图模块
-var wordTreeProvider_1 = require("./views/wordTreeProvider");
-Object.defineProperty(exports, "WordTreeProvider", { enumerable: true, get: function () { return wordTreeProvider_1.WordTreeProvider; } });
-Object.defineProperty(exports, "WordTreeItem", { enumerable: true, get: function () { return wordTreeProvider_1.WordTreeItem; } });
-var views_1 = require("./views"); // 如果需要外部初始化视图
-Object.defineProperty(exports, "initWordTreeView", { enumerable: true, get: function () { return views_1.initWordTreeView; } });
+// 如果需要外部初始化视图
 // 工具模块
 var clipboard_1 = require("./utils/clipboard");
 Object.defineProperty(exports, "copyToClipboard", { enumerable: true, get: function () { return clipboard_1.copyToClipboard; } });

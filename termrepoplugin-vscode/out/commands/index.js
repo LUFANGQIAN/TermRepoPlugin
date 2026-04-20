@@ -34,12 +34,12 @@ Object.defineProperty(exports, "copyWordCommand", { enumerable: true, get: funct
  * @param storage - 存储管理器实例，用于命令中操作单词数据。
  * @param treeProvider - 树视图提供者实例，用于命令中刷新单词列表视图。
  */
-function registerCommands(context, storage, treeProvider) {
+function registerCommands(context, storage) {
     // 收集所有命令的 disposable
     const commands = [
         (0, printSelection_1.printSelectionCommand)(),
         (0, showAllWords_1.showAllWordsCommand)(storage),
-        (0, addWord_1.addWordCommand)(storage, treeProvider),
+        (0, addWord_1.addWordCommand)(storage),
         (0, copyWord_1.copyWordCommand)(),
     ];
     // 一次性将所有命令添加到订阅中

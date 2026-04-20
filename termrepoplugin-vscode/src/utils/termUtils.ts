@@ -49,6 +49,8 @@ async function askForPartNote(
   return input;
 }
 
+
+
 /**
  * 通过问答方式获取术语详情
  * @param word 原始单词

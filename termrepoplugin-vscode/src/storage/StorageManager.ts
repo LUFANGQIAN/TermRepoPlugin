@@ -152,4 +152,13 @@ export class StorageManager {
     partMap.set(note, count);
     await this.save();
   }
+
+  /**
+ * 检查某个原始单词是否已被收藏
+ * @param originalText 原始单词
+ * @returns 如果存在返回 true，否则 false
+ */
+  hasTerm(originalText: string): boolean {
+    return Array.from(this.terms.values()).some(t => t.originalText === originalText);
+  }
 }

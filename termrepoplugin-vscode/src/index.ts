@@ -29,8 +29,7 @@ export {
 } from './commands';
 
 // 视图模块
-export { WordTreeProvider, WordTreeItem } from './views/wordTreeProvider';
-export { initWordTreeView } from './views';   // 如果需要外部初始化视图
+// 如果需要外部初始化视图
 
 // 工具模块
 export { copyToClipboard } from './utils/clipboard';

@@ -1,38 +1,54 @@
 "use strict";
-/**
- * @module 扩展入口
- * @file extension.ts
- * @description VS Code 扩展的激活入口。负责初始化存储管理器并注册所有命令。
- * @module extension
- */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = activate;
 exports.deactivate = deactivate;
+// src/extension.ts
+const vscode = __importStar(require("vscode"));
 const commands_1 = require("./commands");
 const StorageManager_1 = require("./storage/StorageManager");
-const views_1 = require("./views"); // 导入视图初始化函数
-/**
- * 扩展激活时调用的入口函数。
- * - 初始化存储管理器（读取全局存储目录下的单词列表）
- * - 注册所有扩展命令（通过依赖注入将存储管理器实例传递给命令注册模块）
- *
- * @param context - VS Code 扩展上下文，提供全局存储路径等资源
- * @returns 无返回值（Promise<void>）
- */
+const views_1 = require("./views");
 async function activate(context) {
     console.log('TermRepoPlugin 已激活');
-    // 1. 初始化存储管理器
+    vscode.window.showInformationMessage('TermRepoPlugin 已激活');
     const storage = new StorageManager_1.StorageManager(context.globalStorageUri.fsPath);
     await storage.init();
-    // 2. 初始化树视图（底部面板）
-    const treeProvider = (0, views_1.initWordTreeView)(context, storage);
-    // 3. 注册命令，并将 treeProvider 传递给需要刷新视图的命令
-    (0, commands_1.registerCommands)(context, storage, treeProvider);
+    (0, commands_1.registerCommands)(context, storage);
+    // 注册 Webview 侧边栏面板
+    (0, views_1.registerWebviewView)(context);
 }
-/**
- * 扩展停用时调用的清理函数。
- * 目前仅输出日志，无额外清理操作。
- */
 function deactivate() {
     console.log('扩展被停用');
 }

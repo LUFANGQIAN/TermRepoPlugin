@@ -12,6 +12,25 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "termrepo-sidebar-container",
+          "title": "TermRepo侧边栏",
+          "icon": "$(book)"
+        }
+      ]
+    },
+    "views": {
+      "termrepo-sidebar-container": [
+        {
+          "icon": "$(book)",
+          "type": "webview",
+          "id": "myWebview",
+          "name": "我的Webview面板"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "termrepoplugin-vscode.printSelection",
@@ -57,25 +76,7 @@
         "key": "alt+q",
         "when": "editorTextFocus && editorHasSelection"
       }
-    ],
-    "viewsContainers": {
-      "panel": [
-        {
-          "id": "termRepoPanel",
-          "title": "词库",
-          "icon": "$(library)"
-        }
-      ]
-    },
-    "views": {
-      "termRepoPanel": [
-        {
-          "id": "termRepoWordList",
-          "name": "单词列表",
-          "icon": "$(library)"
-        }
-      ]
-    }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -97,5 +98,8 @@
     "typedoc": "^0.28.18",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1"
+  },
+  "dependencies": {
+    "@vscode/webview-ui-toolkit": "^1.4.0"
   }
 }

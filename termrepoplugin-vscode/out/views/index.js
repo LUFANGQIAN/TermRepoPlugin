@@ -33,20 +33,15 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.initWordTreeView = initWordTreeView;
-// src/views/index.ts
+exports.registerWebviewView = registerWebviewView;
 const vscode = __importStar(require("vscode"));
-const wordTreeProvider_1 = require("./wordTreeProvider");
+const MyWebviewProvider_1 = require("./MyWebviewProvider");
 /**
- * 初始化底部面板的单词列表树视图。
- * @param context - 扩展上下文，用于注册视图
- * @param storage - 存储管理器实例
- * @returns WordTreeProvider 实例，可用于刷新视图或监听事件
+ * 注册 Webview 视图（供 extension.ts 调用）
+ * @param context 插件上下文
  */
-function initWordTreeView(context, storage) {
-    console.log('Registering tree data provider for termRepoWordList');
-    const treeProvider = new wordTreeProvider_1.WordTreeProvider(storage);
-    vscode.window.registerTreeDataProvider('termRepoWordList', treeProvider);
-    return treeProvider;
+function registerWebviewView(context) {
+    const provider = new MyWebviewProvider_1.MyWebviewProvider(context.extensionUri);
+    context.subscriptions.push(vscode.window.registerWebviewViewProvider('myWebview', provider));
 }
 //# sourceMappingURL=index.js.map

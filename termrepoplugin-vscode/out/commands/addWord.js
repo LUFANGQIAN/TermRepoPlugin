@@ -37,7 +37,6 @@ exports.addWordCommand = addWordCommand;
 const vscode = __importStar(require("vscode"));
 const clipboard_1 = require("../utils/clipboard");
 const termUtils_1 = require("../utils/termUtils");
-const wordSuggestions_1 = require("../utils/wordSuggestions");
 /**
  * 创建一个用于收藏单词的 VS Code 命令。
  *
@@ -56,7 +55,7 @@ const wordSuggestions_1 = require("../utils/wordSuggestions");
  * @param treeProvider - 树视图提供者实例，用于在单词添加后刷新视图。
  * @returns 返回一个 `vscode.Disposable` 对象，可用于在扩展停用时注销命令。
  */
-function addWordCommand(storage, treeProvider) {
+function addWordCommand(storage) {
     return vscode.commands.registerCommand('termrepoplugin-vscode.addWord', async () => {
         // 1. 获取活动编辑器和选中文本
         let word;
@@ -66,7 +65,7 @@ function addWordCommand(storage, treeProvider) {
             word = editor.document.getText(editor.selection);
             filePath = vscode.workspace.asRelativePath(editor.document.uri);
         }
-        // 2. 如果没有选中文本，则弹出输入框让用户输入（此时无法记录文件路径）
+        // 2. 如果没有选中文本，则弹出输入框让用户输入
         if (!word) {
             word = await vscode.window.showInputBox({
                 prompt: '请输入要收藏的单词',
@@ -77,31 +76,36 @@ function addWordCommand(storage, treeProvider) {
         if (!word) {
             return;
         }
-        // 3. 定义建议获取函数（从学习库获取）
-        const getSuggestion = (partText) => {
-            const learned = storage.getTopSuggestion(partText);
-            if (learned) {
-                return learned;
-            }
-            // 回退到静态映射表
-            return wordSuggestions_1.suggestionMap[partText.toLowerCase()];
-        };
-        // 4. 通过问答获取术语详情（注入建议函数）
+        // 3. 清理空格：去除首尾空格，并检查有效性
+        word = word.trim();
+        if (word === '') {
+            vscode.window.showWarningMessage('单词不能为空，请重新选择或输入');
+            return;
+        }
+        // 可选：检查是否包含内部空格（短语暂不支持）
+        if (word.includes(' ')) {
+            vscode.window.showWarningMessage('暂不支持添加包含空格的短语，请选择单个单词');
+            return;
+        }
+        // 4. 检查单词是否已存在（基于清理后的单词）
+        if (storage.hasTerm(word)) {
+            vscode.window.showWarningMessage(`⚠️ 单词 "${word}" 已存在`);
+            return;
+        }
+        const getSuggestion = (partText) => storage.getTopSuggestion(partText);
         const newTerm = await (0, termUtils_1.askForTermDetails)(word, filePath, getSuggestion);
         if (!newTerm) {
             vscode.window.showInformationMessage('已取消添加单词');
             return;
         }
-        // 5. 保存术语
         const added = await storage.addTerm(newTerm);
         if (added) {
-            // 6. 更新学习库：记录每个有备注的拆分部分
             for (const part of newTerm.parts) {
                 if (part.note) {
                     await storage.updateSuggestion(part.text, part.note);
                 }
             }
-            treeProvider.refresh();
+            // 不再刷新树视图，可以在这里通知 Webview 视图更新（可选）
             await (0, clipboard_1.copyToClipboard)(word, false);
             vscode.window.showInformationMessage(`✅ 已收藏单词: ${word}`);
         }

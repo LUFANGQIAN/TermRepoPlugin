@@ -15,7 +15,6 @@ import { StorageManager } from '../storage/StorageManager';
 import { printSelectionCommand } from './printSelection';
 import { addWordCommand } from './addWord';
 import { showAllWordsCommand } from './showAllWords';
-import { WordTreeProvider } from '../views/wordTreeProvider';
 import { copyWordCommand } from './copyWord';
 
 export { addWordCommand } from './addWord';
@@ -35,13 +34,13 @@ export { copyWordCommand } from './copyWord';
 export function registerCommands(
   context: vscode.ExtensionContext,
   storage: StorageManager,
-  treeProvider: WordTreeProvider
+
 ) {
   // 收集所有命令的 disposable
   const commands = [
     printSelectionCommand(),
     showAllWordsCommand(storage),
-    addWordCommand(storage, treeProvider),
+    addWordCommand(storage),
     copyWordCommand(),
   ];
 

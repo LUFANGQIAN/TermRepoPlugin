@@ -39,10 +39,9 @@ const fs = __importStar(require("fs/promises"));
 const path = __importStar(require("path"));
 const ensureStorageDir_1 = require("./ensureStorageDir");
 class StorageManager {
-    dataFilePath;
-    terms = new Map();
-    suggestions = new Map();
     constructor(storagePath) {
+        this.terms = new Map();
+        this.suggestions = new Map();
         this.dataFilePath = path.join(storagePath, 'termrepo-data.json');
     }
     async init() {
@@ -172,6 +171,14 @@ class StorageManager {
         const count = (partMap.get(note) || 0) + 1;
         partMap.set(note, count);
         await this.save();
+    }
+    /**
+   * 检查某个原始单词是否已被收藏
+   * @param originalText 原始单词
+   * @returns 如果存在返回 true，否则 false
+   */
+    hasTerm(originalText) {
+        return Array.from(this.terms.values()).some(t => t.originalText === originalText);
     }
 }
 exports.StorageManager = StorageManager;
