@@ -34,22 +34,24 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.copyToClipboard = copyToClipboard;
-// src/utils/clipboard.ts
 const vscode = __importStar(require("vscode"));
 /**
- * 将文本复制到剪贴板，并可选地显示提示消息。
- * @param text - 要复制的文本
- * @param showNotification - 是否显示成功提示，默认为 true
- * @returns Promise<void>
+ * 将文本复制到系统剪贴板。
+ *
+ * 该函数对剪贴板写入做了一层统一封装，
+ * 便于不同命令和视图复用同一套反馈逻辑。
+ *
+ * @param text 要复制的文本内容。
+ * @param showNotification 是否在成功后弹出提示消息，默认为 `true`。
  */
 async function copyToClipboard(text, showNotification = true) {
     if (!text) {
-        vscode.window.showErrorMessage('没有可复制的内容');
+        void vscode.window.showErrorMessage('没有可复制的内容。');
         return;
     }
     await vscode.env.clipboard.writeText(text);
     if (showNotification) {
-        vscode.window.showInformationMessage(`✅ 已复制“${text}”`);
+        void vscode.window.showInformationMessage(`已复制：${text}`);
     }
 }
 //# sourceMappingURL=clipboard.js.map

@@ -1,6 +1,5 @@
 {
   "entryPoints": [
-    "src/extension.ts",
     "src/index.ts"
   ],
   "out": "docs",

@@ -17,6 +17,9 @@ type WebviewMessage =
   | { command: 'deleteTerm'; id: string }
   | { command: 'copyWord'; word: string };
 
+/**
+ * Webview 表单中单个拆分项的提交结构。
+ */
 interface EditablePartPayload {
   text: string;
   note?: string;
@@ -24,6 +27,9 @@ interface EditablePartPayload {
   type?: string;
 }
 
+/**
+ * Webview 详情页提交时使用的词条载荷结构。
+ */
 interface EditableTermPayload {
   id?: string;
   originalText: string;
@@ -36,6 +42,9 @@ interface EditableTermPayload {
   parts: EditablePartPayload[];
 }
 
+/**
+ * 列表页展示用的词条摘要结构。
+ */
 interface WebviewTermSummary {
   id: string;
   originalText: string;
@@ -46,6 +55,9 @@ interface WebviewTermSummary {
   updatedAt: number;
 }
 
+/**
+ * 主进程发送给 Webview 的页面状态。
+ */
 interface WebviewStatePayload {
   terms: WebviewTermSummary[];
   selectedTerm: TermEntry | null;
@@ -55,6 +67,11 @@ interface WebviewStatePayload {
   triggerCharacter: string;
 }
 
+/**
+ * 侧边栏 Webview 视图提供器。
+ *
+ * 负责维护视图状态、处理页面消息，并将词库数据组织成 Webview 可消费的结构。
+ */
 export class MyWebviewProvider implements vscode.WebviewViewProvider, vscode.Disposable {
   private webviewView?: vscode.WebviewView;
   private selectedId: string | null = null;
@@ -63,6 +80,10 @@ export class MyWebviewProvider implements vscode.WebviewViewProvider, vscode.Dis
   private mode: 'create' | 'edit' | null = null;
   private readonly disposables: vscode.Disposable[] = [];
 
+  /**
+   * @param extensionUri 扩展根目录 URI，用于限定 Webview 的资源访问范围。
+   * @param storage 词库存储管理器，供视图读取和修改业务数据。
+   */
   constructor(
     private readonly extensionUri: vscode.Uri,
     private readonly storage: StorageManager
@@ -79,12 +100,24 @@ export class MyWebviewProvider implements vscode.WebviewViewProvider, vscode.Dis
     );
   }
 
+  /**
+   * 释放视图提供器内部注册的资源。
+   */
   dispose(): void {
     while (this.disposables.length > 0) {
       this.disposables.pop()?.dispose();
     }
   }
 
+  /**
+   * 初始化 Webview 视图。
+   *
+   * 该方法会为 Webview 设置脚本权限、注入 HTML，并建立消息监听。
+   *
+   * @param webviewView VS Code 创建的 Webview 实例。
+   * @param _context 视图解析上下文，当前未直接使用。
+   * @param _token 取消令牌，当前未直接使用。
+   */
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
     _context: vscode.WebviewViewResolveContext,
@@ -106,6 +139,11 @@ export class MyWebviewProvider implements vscode.WebviewViewProvider, vscode.Dis
     this.disposables.push(messageDisposable);
   }
 
+  /**
+   * 统一处理来自 Webview 的交互消息。
+   *
+   * @param message Webview 发回的命令载荷。
+   */
   private async handleMessage(message: WebviewMessage): Promise<void> {
     switch (message.command) {
       case 'ready':
@@ -141,7 +179,7 @@ export class MyWebviewProvider implements vscode.WebviewViewProvider, vscode.Dis
       case 'openSettings':
         await vscode.commands.executeCommand(
           'workbench.action.openSettings',
-          'termrepoplugin-vscode.triggerSymbol'
+          'termrepoplugin-vscode'
         );
         return;
       case 'saveTerm':
@@ -157,6 +195,13 @@ export class MyWebviewProvider implements vscode.WebviewViewProvider, vscode.Dis
     }
   }
 
+  /**
+   * 保存详情页中的词条内容。
+   *
+   * 当 `payload.id` 存在时执行更新，否则按新增词条处理。
+   *
+   * @param payload Webview 表单提交的原始数据。
+   */
   private async saveTerm(payload: EditableTermPayload): Promise<void> {
     const normalizedWord = payload.originalText.trim();
     if (!normalizedWord) {
@@ -239,6 +284,11 @@ export class MyWebviewProvider implements vscode.WebviewViewProvider, vscode.Dis
     await this.postInfo(`已新增单词: ${normalizedWord}`);
   }
 
+  /**
+   * 删除指定词条，并在删除前弹出确认提示。
+   *
+   * @param id 目标词条 ID。
+   */
   private async deleteTerm(id: string): Promise<void> {
     const target = this.storage.getTerm(id);
     if (!target) {
@@ -266,6 +316,12 @@ export class MyWebviewProvider implements vscode.WebviewViewProvider, vscode.Dis
     await this.postInfo(`已删除单词: ${target.originalText}`);
   }
 
+  /**
+   * 将表单拆分项转换为标准业务结构。
+   *
+   * @param parts 表单中的拆分项数组。
+   * @returns 去除空项后的标准拆分项集合。
+   */
   private normalizeParts(parts: EditablePartPayload[]): TermPart[] {
     return parts
       .map((part) => ({
@@ -277,6 +333,12 @@ export class MyWebviewProvider implements vscode.WebviewViewProvider, vscode.Dis
       .filter((part) => part.text.length > 0);
   }
 
+  /**
+   * 统一清洗标签数组，包含去空格、去空值和去重。
+   *
+   * @param tags 原始标签数组。
+   * @returns 标准化后的标签数组。
+   */
   private normalizeTags(tags?: string[]): string[] {
     if (!tags) {
       return [];
@@ -290,10 +352,22 @@ export class MyWebviewProvider implements vscode.WebviewViewProvider, vscode.Dis
     return Array.from(uniqueTags);
   }
 
+  /**
+   * 对数值型字段执行兜底处理。
+   *
+   * @param value 原始值。
+   * @param fallback 默认值。
+   * @returns 合法数值或默认值。
+   */
   private normalizeNumber(value: number | undefined, fallback: number): number {
     return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
   }
 
+  /**
+   * 获取当前搜索条件下可展示的词条。
+   *
+   * @returns 已按更新时间倒序排列的词条列表。
+   */
   private getVisibleTerms(): TermEntry[] {
     const allTerms = this.storage
       .getAllTerms()
@@ -320,6 +394,11 @@ export class MyWebviewProvider implements vscode.WebviewViewProvider, vscode.Dis
     });
   }
 
+  /**
+   * 构建发往 Webview 的完整页面状态。
+   *
+   * @returns 页面当前需要的状态对象。
+   */
   private buildStatePayload(): WebviewStatePayload {
     const visibleTerms = this.getVisibleTerms();
     const selectedTerm =
@@ -349,6 +428,9 @@ export class MyWebviewProvider implements vscode.WebviewViewProvider, vscode.Dis
     };
   }
 
+  /**
+   * 向 Webview 推送最新状态。
+   */
   private async refresh(): Promise<void> {
     if (!this.webviewView) {
       return;
@@ -360,6 +442,11 @@ export class MyWebviewProvider implements vscode.WebviewViewProvider, vscode.Dis
     });
   }
 
+  /**
+   * 向 Webview 发送信息提示。
+   *
+   * @param message 要展示的提示文本。
+   */
   private async postInfo(message: string): Promise<void> {
     if (!this.webviewView) {
       return;
@@ -371,6 +458,13 @@ export class MyWebviewProvider implements vscode.WebviewViewProvider, vscode.Dis
     });
   }
 
+  /**
+   * 向 Webview 发送错误提示。
+   *
+   * 如果视图尚未初始化，则回退到 VS Code 原生错误通知。
+   *
+   * @param message 要展示的错误文本。
+   */
   private async postError(message: string): Promise<void> {
     if (!this.webviewView) {
       vscode.window.showErrorMessage(message);
@@ -383,6 +477,12 @@ export class MyWebviewProvider implements vscode.WebviewViewProvider, vscode.Dis
     });
   }
 
+  /**
+   * 生成侧边栏所需的完整 HTML 文档。
+   *
+   * @param webview 当前 Webview 实例，用于注入 CSP 来源。
+   * @returns 可直接赋值给 `webview.html` 的页面字符串。
+   */
   private getHtml(webview: vscode.Webview): string {
     const nonce = this.getNonce();
 
@@ -1219,6 +1319,11 @@ export class MyWebviewProvider implements vscode.WebviewViewProvider, vscode.Dis
 </html>`;
   }
 
+  /**
+   * 生成用于 CSP 的随机 nonce。
+   *
+   * @returns 一段固定长度的随机字符串。
+   */
   private getNonce(): string {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let value = '';

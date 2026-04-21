@@ -1,8 +1,19 @@
 {
   "name": "termrepoplugin-vscode",
+  "publisher": "termrepo",
   "displayName": "TermRepoPlugin-VSCode",
   "description": "一键收藏术语，并通过固定符号快速搜索复用词库单词。",
   "version": "0.0.1",
+  "preview": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LUFANGQIAN/TermRepoPlugin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/LUFANGQIAN/TermRepoPlugin/issues"
+  },
+  "homepage": "https://github.com/LUFANGQIAN/TermRepoPlugin/tree/main/termrepoplugin-vscode",
   "engines": {
     "vscode": "^1.110.0"
   },
@@ -61,6 +72,11 @@
         "category": "TermRepoPlugin"
       },
       {
+        "command": "termrepoplugin-vscode.configureFavoriteKeybinding",
+        "title": "配置收藏快捷键",
+        "category": "TermRepoPlugin"
+      },
+      {
         "command": "termrepoplugin-vscode.exportWords",
         "title": "导出单词库",
         "category": "TermRepoPlugin"
@@ -112,10 +128,15 @@
       "properties": {
         "termrepoplugin-vscode.triggerSymbol": {
           "type": "string",
-          "default": ";",
+          "default": "%",
           "minLength": 1,
           "maxLength": 1,
           "description": "输入该符号后，可从单词库中搜索并替换单词。"
+        },
+        "termrepoplugin-vscode.favoriteKeybinding": {
+          "type": "string",
+          "default": "Alt+Q",
+          "description": "收藏单词的目标快捷键组合，默认是 Alt+Q。修改后插件会引导你在 VS Code 键盘快捷方式中为收藏命令完成实际绑定。"
         }
       }
     }
@@ -124,6 +145,7 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
+    "package": "vsce package",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
@@ -136,6 +158,7 @@
     "@types/vscode": "^1.110.0",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.9.1",
     "eslint": "^9.39.3",
     "typedoc": "^0.28.18",
     "typescript": "^5.9.3",

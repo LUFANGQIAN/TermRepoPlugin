@@ -1,38 +1,73 @@
-// src/utils/termUtils.ts
 import { randomUUID } from 'crypto';
 import * as vscode from 'vscode';
 import { TermEntry, TermPart } from '../types';
-import { suggestionMap } from './wordSuggestions'; // 静态映射表，作为后备
+import { suggestionMap } from './wordSuggestions';
 
-// 静态建议函数（仅作为内部后备）
+/**
+ * 从静态建议表中获取某个拆分项的默认备注。
+ *
+ * 这是一层后备策略：当动态学习建议不存在时，
+ * 会退回到预置术语映射表提供推荐值。
+ *
+ * @param partText 拆分项文本。
+ * @returns 命中的建议备注；若不存在则返回 `undefined`。
+ */
 function getStaticSuggestion(partText: string): string | undefined {
   return suggestionMap[partText.toLowerCase()];
 }
 
+/**
+ * 将标识符按命名风格拆分为多个语义片段。
+ *
+ * 当前支持两类拆分规则：
+ * - 下划线命名：`user_name` -> `user`, `name`
+ * - 驼峰命名：`indexRouter` -> `index`, `Router`
+ *
+ * @param text 原始单词或标识符。
+ * @returns 拆分后的文本片段数组。
+ */
 export function splitIdentifier(text: string): string[] {
   if (text.includes('_')) {
     return text.split('_');
   }
+
   return text.split(/(?<=[a-z])(?=[A-Z])/);
 }
 
+/**
+ * 为拆分项自动生成基础标签。
+ *
+ * 目前会根据字母或中文的存在情况自动附加 `en` / `zh` 标签，
+ * 以便后续搜索和筛选。
+ *
+ * @param partText 拆分项文本。
+ * @param note 拆分项备注。
+ * @returns 自动推断出的标签数组。
+ */
 export function autoTagPart(partText: string, note?: string): string[] {
   const tags: string[] = [];
+
   if (/[a-zA-Z]/.test(partText)) {
     tags.push('en');
   }
   if (note && /[\u4e00-\u9fa5]/.test(note)) {
     tags.push('zh');
   }
+
   return tags;
 }
 
 /**
- * 为拆分部分提供输入界面（输入框预填建议，直接回车采用）
- * @param partText 拆分文本
- * @param index 当前部分序号
- * @param total 总部分数
- * @param suggestion 外部提供的建议（优先使用）
+ * 询问用户某个拆分项的备注。
+ *
+ * 如果存在推荐值，输入框会自动预填建议内容，
+ * 用户可以直接回车采用，也可以手动修改。
+ *
+ * @param partText 当前拆分项文本。
+ * @param index 当前拆分项序号，从 1 开始。
+ * @param total 总拆分项数量。
+ * @param suggestion 推荐备注。
+ * @returns 用户输入的备注；若取消则返回 `undefined`。
  */
 async function askForPartNote(
   partText: string,
@@ -40,33 +75,40 @@ async function askForPartNote(
   total: number,
   suggestion?: string
 ): Promise<string | undefined> {
-  const input = await vscode.window.showInputBox({
+  return vscode.window.showInputBox({
     title: `${partText} 的备注 (${index}/${total})`,
-    prompt: suggestion ? `建议：“${suggestion}”，按回车直接采用，或修改后回车` : '输入备注（可留空）',
+    prompt: suggestion
+      ? `建议值：“${suggestion}”，可直接回车采用，或修改后确认`
+      : '请输入该拆分项的备注（可留空）',
     placeHolder: suggestion || '例如：路由',
     value: suggestion || '',
   });
-  return input;
 }
 
-
-
 /**
- * 通过问答方式获取术语详情
- * @param word 原始单词
- * @param filePath 文件路径（可选）
- * @param getSuggestion 外部建议获取函数（优先于静态映射表）
+ * 通过连续问答的方式采集一个完整词条。
+ *
+ * 采集流程包括：
+ * 1. 询问整体备注
+ * 2. 自动拆分标识符
+ * 3. 针对每个拆分项依次询问备注
+ * 4. 自动生成词条与拆分项标签
+ *
+ * @param word 原始单词。
+ * @param filePath 来源文件路径，可为空。
+ * @param getSuggestion 动态建议获取函数，优先级高于静态建议表。
+ * @returns 完整词条；用户任一步取消时返回 `undefined`。
  */
 export async function askForTermDetails(
   word: string,
   filePath: string | undefined,
   getSuggestion?: (partText: string) => string | undefined
 ): Promise<TermEntry | undefined> {
-  // 整体备注
   const overallNote = await vscode.window.showInputBox({
     prompt: `“${word}” 的整体备注是什么？`,
     placeHolder: '例如：主页路由（可留空）',
   });
+
   if (overallNote === undefined) {
     return undefined;
   }
@@ -74,26 +116,24 @@ export async function askForTermDetails(
   const partsText = splitIdentifier(word);
   const parts: TermPart[] = [];
 
-  for (let i = 0; i < partsText.length; i++) {
-    const partText = partsText[i];
-    // 优先使用外部建议，否则使用静态映射表
+  for (let index = 0; index < partsText.length; index += 1) {
+    const partText = partsText[index];
     const externalSuggestion = getSuggestion ? getSuggestion(partText) : undefined;
     const suggestion = externalSuggestion ?? getStaticSuggestion(partText);
 
-    const note = await askForPartNote(partText, i + 1, partsText.length, suggestion);
+    const note = await askForPartNote(partText, index + 1, partsText.length, suggestion);
     if (note === undefined) {
       return undefined;
     }
-    const tags = autoTagPart(partText, note);
+
     parts.push({
       text: partText,
       note: note || undefined,
-      tags,
+      tags: autoTagPart(partText, note),
       type: 'camelCase',
     });
   }
 
-  // 全局标签
   const globalTags: string[] = [];
   if (/[a-zA-Z]/.test(word)) {
     globalTags.push('en');
@@ -101,8 +141,9 @@ export async function askForTermDetails(
   if (overallNote && /[\u4e00-\u9fa5]/.test(overallNote)) {
     globalTags.push('zh');
   }
-  const partTagsSet = new Set(parts.flatMap(p => p.tags));
-  partTagsSet.forEach(tag => {
+
+  const partTagsSet = new Set(parts.flatMap((part) => part.tags));
+  partTagsSet.forEach((tag) => {
     if (!globalTags.includes(tag)) {
       globalTags.push(tag);
     }

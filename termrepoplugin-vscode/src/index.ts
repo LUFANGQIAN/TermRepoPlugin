@@ -1,36 +1,78 @@
 /**
- * @module 项目公共入口
- * @description 本文件是 TermRepoPlugin 的统一导出点。
+ * 项目统一公共导出入口。
  *
- * 模块结构说明：
- * - `storage`：单词存储核心，提供 StorageManager 类用于读写和管理单词数据。
- * - `commands`：所有 VS Code 命令的工厂函数，每个函数返回一个可注册的 Disposable。
- * - `views`：自定义视图组件，目前包含底部面板的单词树视图（WordTreeProvider）。
- * - `utils`：通用工具函数，例如剪贴板操作。
+ * 这个文件的职责是把插件中值得阅读、复用和生成文档的公开接口集中导出，
+ * 让阅读代码的人只需要从一个入口就能快速了解整个项目的能力边界。
  *
- * 贡献者可以按需导入任何公共 API，例如：
- * ```typescript
- * import { StorageManager, addWordCommand, WordTreeProvider, copyToClipboard } from 'termrepoplugin-vscode';
- * ```
+ * 建议将它理解为项目的“公共 API 清单”：
+ * - 想看扩展如何启动，可以从这里进入 `activate` / `deactivate`
+ * - 想看命令系统，可以从这里进入 `registerCommands` 和各个命令工厂
+ * - 想看数据结构，可以从这里进入 `TermEntry` / `TermPart`
+ * - 想看词库存储、Webview、补全替换等实现，也都可以从这里跳转
  *
- * 注意：内部模块的具体实现细节请参考各自的源文件。
+ * 未来如果项目继续扩展，推荐优先维护这个文件，
+ * 让它始终保持“对外阅读入口”的角色。
+ *
+ * @module 项目公共导出入口
  */
 
-// 存储模块
-export { StorageManager } from './storage/StorageManager';
+/**
+ * 扩展生命周期与入口能力。
+ */
+export { activate, deactivate } from './extension';
 
-// 命令模块
+/**
+ * 命令系统总入口与各命令工厂。
+ */
+export { registerCommands } from './commands';
 export {
   addWordCommand,
-  printSelectionCommand,
   copyWordCommand,
+  configureFavoriteKeybindingCommand,
+  exportWordsCommand,
+  importWordsCommand,
+  printSelectionCommand,
   showAllWordsCommand,
-  // 未来新增命令在此添加
 } from './commands';
 
-// 视图模块
-// 如果需要外部初始化视图
+/**
+ * 编辑器补全与触发符号配置能力。
+ */
+export {
+  getTriggerCharacter,
+  registerTermCompletionProvider,
+} from './providers/termCompletionProvider';
 
-// 工具模块
+/**
+ * 存储层能力。
+ */
+export { ensureStorageDir } from './storage/ensureStorageDir';
+export { StorageManager } from './storage/StorageManager';
+
+/**
+ * 视图层能力。
+ */
+export { registerWebviewView } from './views';
+export { MyWebviewProvider } from './views/MyWebviewProvider';
+
+/**
+ * 业务数据类型。
+ */
+export type { TermEntry, TermPart } from './types';
+
+/**
+ * 工具函数与辅助数据。
+ */
 export { copyToClipboard } from './utils/clipboard';
-// 其他工具函数在此导出
+export {
+  FAVORITE_KEYBINDING_CONFIG_PATH,
+  getFavoriteKeybinding,
+  openFavoriteKeybindingSettings,
+  registerFavoriteKeybindingSupport,
+} from './utils/favoriteKeybinding';
+export {
+  askForTermDetails,
+  autoTagPart,
+  splitIdentifier,
+} from './utils/termUtils';
+export { suggestionMap } from './utils/wordSuggestions';

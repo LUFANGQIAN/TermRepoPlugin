@@ -36,6 +36,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerWebviewView = registerWebviewView;
 const vscode = __importStar(require("vscode"));
 const MyWebviewProvider_1 = require("./MyWebviewProvider");
+/**
+ * 注册侧边栏 Webview 视图。
+ *
+ * 该函数负责创建 {@link MyWebviewProvider}，
+ * 并将视图提供器与存储层统一纳入扩展上下文的生命周期管理。
+ *
+ * @param context 扩展上下文。
+ * @param storage 词库存储管理器。
+ */
 function registerWebviewView(context, storage) {
     const provider = new MyWebviewProvider_1.MyWebviewProvider(context.extensionUri, storage);
     context.subscriptions.push(storage, provider, vscode.window.registerWebviewViewProvider('myWebview', provider));

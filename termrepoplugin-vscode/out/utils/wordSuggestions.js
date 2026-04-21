@@ -1,24 +1,24 @@
 "use strict";
-// src/utils/wordSuggestions.ts
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.suggestionMap = void 0;
 /**
- * 常用技术词汇的中文建议备注映射表
- * 键为英文单词（小写），值为建议的中文备注
+ * 常见技术术语的静态建议备注映射表。
+ *
+ * 该表用于在动态学习建议尚未形成时，为拆分项输入框提供默认备注，
+ * 提升首次录入词条时的填写效率。
  */
 exports.suggestionMap = {
-    // 基础技术词汇
     index: '索引',
     router: '路由',
     user: '用户',
     get: '获取',
-    post: '发布',
+    post: '提交',
     put: '更新',
     delete: '删除',
     create: '创建',
     update: '更新',
     find: '查找',
-    findAll: '查找所有',
+    findAll: '查找全部',
     save: '保存',
     remove: '移除',
     config: '配置',
@@ -64,10 +64,10 @@ exports.suggestionMap = {
     debug: '调试',
     warn: '警告',
     info: '信息',
-    validate: '验证',
+    validate: '校验',
     transform: '转换',
     parse: '解析',
-    stringify: '字符串化',
+    stringify: '序列化',
     encode: '编码',
     decode: '解码',
     encrypt: '加密',
@@ -79,9 +79,9 @@ exports.suggestionMap = {
     auth: '认证',
     authorize: '授权',
     login: '登录',
-    logout: '登出',
+    logout: '退出',
     register: '注册',
-    profile: '个人资料',
+    profile: '资料',
     avatar: '头像',
     email: '邮箱',
     phone: '电话',
@@ -110,7 +110,7 @@ exports.suggestionMap = {
     datetime: '日期时间',
     timestamp: '时间戳',
     id: '标识符',
-    uuid: '通用唯一标识符',
+    uuid: '唯一标识符',
     key: '键',
     value: '值',
     map: '映射',
@@ -124,8 +124,7 @@ exports.suggestionMap = {
     undefined: '未定义',
     any: '任意类型',
     void: '无返回值',
-    never: '永不返回',
+    never: '不会返回',
     unknown: '未知类型',
-    // 可继续扩展
 };
 //# sourceMappingURL=wordSuggestions.js.map

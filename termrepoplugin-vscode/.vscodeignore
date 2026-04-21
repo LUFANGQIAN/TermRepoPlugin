@@ -4,6 +4,13 @@ src/**
 .gitignore
 .yarnrc
 vsc-extension-quickstart.md
+docs/**
+BUGList.md
+typedoc.json
+各功能实现思路.md
+项目评估报告.md
+*.vsix
+out/test/**
 **/tsconfig.json
 **/eslint.config.mjs
 **/*.map

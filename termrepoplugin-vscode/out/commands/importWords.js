@@ -35,6 +35,16 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.importWordsCommand = importWordsCommand;
 const vscode = __importStar(require("vscode"));
+/**
+ * 创建“导入单词库”命令。
+ *
+ * 导入时会读取用户选择的 JSON 文件，尝试将其中的词条恢复成
+ * {@link TermEntry} 结构，并逐条写入存储层。已存在的单词会被跳过，
+ * 最终向用户反馈新增和跳过的数量。
+ *
+ * @param storage 词库存储管理器，用于写入导入的词条。
+ * @returns 注册完成后的命令句柄。
+ */
 function importWordsCommand(storage) {
     return vscode.commands.registerCommand('termrepoplugin-vscode.importWords', async () => {
         const sourceUris = await vscode.window.showOpenDialog({
@@ -70,6 +80,12 @@ function importWordsCommand(storage) {
         void vscode.window.showInformationMessage(`导入完成：新增 ${importedCount} 个，跳过 ${skippedCount} 个重复词条。`);
     });
 }
+/**
+ * 将导入文件的内容转换成词条数组。
+ *
+ * @param parsed 导入文件解析后的 JSON 对象。
+ * @returns 通过校验的词条数组。
+ */
 function normalizeImportedTerms(parsed) {
     if (!Array.isArray(parsed.terms)) {
         return [];
@@ -78,6 +94,15 @@ function normalizeImportedTerms(parsed) {
         .map((item) => normalizeTerm(item))
         .filter((term) => term !== null);
 }
+/**
+ * 尝试把任意 JSON 节点恢复为标准词条对象。
+ *
+ * 该函数会执行最小必要校验，只接受具备核心字段的对象，
+ * 并为缺失的非关键字段补充默认值。
+ *
+ * @param value 待校验和归一化的原始值。
+ * @returns 合法时返回标准词条，否则返回 `null`。
+ */
 function normalizeTerm(value) {
     if (!value || typeof value !== 'object') {
         return null;

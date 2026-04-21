@@ -38,8 +38,23 @@ exports.getTriggerCharacter = getTriggerCharacter;
 const vscode = __importStar(require("vscode"));
 const CONFIG_SECTION = 'termrepoplugin-vscode';
 const CONFIG_KEY = 'triggerSymbol';
+/**
+ * 注册基于固定触发符号的单词替换补全提供器。
+ *
+ * 用户在编辑器中输入类似 `;router` 的前缀后，
+ * 提供器会在词库中搜索匹配项，并将整段触发文本替换为目标单词。
+ * 该提供器同时监听配置变化，以支持触发符号的动态切换。
+ *
+ * @param context 扩展上下文，用于托管补全提供器和配置监听器。
+ * @param storage 词库存储管理器，用于检索补全候选词条。
+ */
 function registerTermCompletionProvider(context, storage) {
     let providerDisposable;
+    /**
+     * 按当前配置重新注册补全提供器。
+     *
+     * 这样可以在用户修改触发符号后立即生效，而无需重载扩展。
+     */
     const registerProvider = () => {
         providerDisposable?.dispose();
         const triggerCharacter = getTriggerCharacter();
@@ -80,10 +95,25 @@ function registerTermCompletionProvider(context, storage) {
         },
     });
 }
+/**
+ * 读取当前配置的触发符号。
+ *
+ * 即使用户误填了多个字符，这里也只取第一个字符作为真正的触发前缀，
+ * 以保证补全提供器始终工作在单字符触发模型下。
+ *
+ * @returns 当前有效的触发符号。
+ */
 function getTriggerCharacter() {
     const value = vscode.workspace.getConfiguration(CONFIG_SECTION).get(CONFIG_KEY, ';').trim();
     return value.length > 0 ? value[0] : ';';
 }
+/**
+ * 从当前行前缀中提取触发符号和搜索关键字。
+ *
+ * @param linePrefix 光标左侧的文本内容。
+ * @param triggerCharacter 当前配置的触发符号。
+ * @returns 匹配成功时返回完整触发串与搜索词，否则返回 `null`。
+ */
 function matchTrigger(linePrefix, triggerCharacter) {
     const escaped = escapeRegExp(triggerCharacter);
     const pattern = new RegExp(`${escaped}([\\w-]*)$`);
@@ -96,9 +126,28 @@ function matchTrigger(linePrefix, triggerCharacter) {
         query: match[1],
     };
 }
+/**
+ * 转义正则表达式中的特殊字符。
+ *
+ * @param value 原始字符串。
+ * @returns 可安全用于正则表达式字面匹配的字符串。
+ */
 function escapeRegExp(value) {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+/**
+ * 从词库中筛选符合查询条件的候选项。
+ *
+ * 检索范围覆盖：
+ * - 原始单词
+ * - 整体备注
+ * - 标签
+ * - 拆分项文本与备注
+ *
+ * @param terms 待检索的词条集合。
+ * @param query 用户输入的查询关键字。
+ * @returns 已排序并限制数量的候选项数组。
+ */
 function findTerms(terms, query) {
     return terms
         .filter((term) => {
@@ -119,6 +168,12 @@ function findTerms(terms, query) {
         .sort((left, right) => right.updatedAt - left.updatedAt)
         .slice(0, 30);
 }
+/**
+ * 为补全项生成 Markdown 说明面板。
+ *
+ * @param term 当前候选词条。
+ * @returns 供补全面板展示的富文本说明。
+ */
 function buildDocumentation(term) {
     const markdown = new vscode.MarkdownString(undefined, true);
     markdown.appendMarkdown(`**${term.originalText}**`);
