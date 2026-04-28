@@ -3,6 +3,12 @@ import { StorageManager } from '../storage/StorageManager';
 import { addWordCommand } from './addWord';
 import { copyWordCommand } from './copyWord';
 import { configureFavoriteKeybindingCommand } from './configureFavoriteKeybinding';
+import {
+  cloudSyncStatusCommand,
+  downloadCloudSnapshotCommand,
+  mergeWithCloudCommand,
+  uploadCloudSnapshotCommand,
+} from './cloudSync';
 import { exportWordsCommand } from './exportWords';
 import { importWordsCommand } from './importWords';
 import { printSelectionCommand } from './printSelection';
@@ -11,6 +17,12 @@ import { showAllWordsCommand } from './showAllWords';
 export { addWordCommand } from './addWord';
 export { copyWordCommand } from './copyWord';
 export { configureFavoriteKeybindingCommand } from './configureFavoriteKeybinding';
+export {
+  cloudSyncStatusCommand,
+  downloadCloudSnapshotCommand,
+  mergeWithCloudCommand,
+  uploadCloudSnapshotCommand,
+} from './cloudSync';
 export { exportWordsCommand } from './exportWords';
 export { importWordsCommand } from './importWords';
 export { printSelectionCommand } from './printSelection';
@@ -41,6 +53,10 @@ export function registerCommands(
     configureFavoriteKeybindingCommand(),
     exportWordsCommand(storage),
     importWordsCommand(storage),
+    cloudSyncStatusCommand(),
+    uploadCloudSnapshotCommand(storage),
+    downloadCloudSnapshotCommand(storage),
+    mergeWithCloudCommand(storage),
   ];
 
   context.subscriptions.push(...commands);

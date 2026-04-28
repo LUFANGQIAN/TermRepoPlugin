@@ -25,6 +25,7 @@ async function activate(context) {
     (0, commands_1.registerCommands)(context, storage);
     (0, termCompletionProvider_1.registerTermCompletionProvider)(context, storage);
     (0, views_1.registerWebviewView)(context, storage);
+    console.log('addVersion');
 }
 /**
  * 扩展停用入口。

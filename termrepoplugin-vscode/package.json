@@ -26,6 +26,10 @@
     "onCommand:termrepoplugin-vscode.showAllWords",
     "onCommand:termrepoplugin-vscode.exportWords",
     "onCommand:termrepoplugin-vscode.importWords",
+    "onCommand:termrepoplugin-vscode.cloudSyncStatus",
+    "onCommand:termrepoplugin-vscode.uploadCloudSnapshot",
+    "onCommand:termrepoplugin-vscode.downloadCloudSnapshot",
+    "onCommand:termrepoplugin-vscode.mergeWithCloud",
     "onView:myWebview",
     "onLanguage:*"
   ],
@@ -85,6 +89,26 @@
         "command": "termrepoplugin-vscode.importWords",
         "title": "导入单词库",
         "category": "TermRepoPlugin"
+      },
+      {
+        "command": "termrepoplugin-vscode.cloudSyncStatus",
+        "title": "Cloud Sync: Show Status",
+        "category": "TermRepoPlugin"
+      },
+      {
+        "command": "termrepoplugin-vscode.uploadCloudSnapshot",
+        "title": "Cloud Sync: Upload Local Terms",
+        "category": "TermRepoPlugin"
+      },
+      {
+        "command": "termrepoplugin-vscode.downloadCloudSnapshot",
+        "title": "Cloud Sync: Download Remote Terms",
+        "category": "TermRepoPlugin"
+      },
+      {
+        "command": "termrepoplugin-vscode.mergeWithCloud",
+        "title": "Cloud Sync: Merge Local and Remote Terms",
+        "category": "TermRepoPlugin"
       }
     ],
     "menus": {
@@ -137,6 +161,16 @@
           "type": "string",
           "default": "Alt+Q",
           "description": "收藏单词的目标快捷键组合，默认是 Alt+Q。修改后插件会引导你在 VS Code 键盘快捷方式中为收藏命令完成实际绑定。"
+        },
+        "termrepoplugin-vscode.cloudSync.apiBaseUrl": {
+          "type": "string",
+          "default": "http://localhost:3000/api/v1",
+          "description": "TermRepo cloud sync API base URL. Use http://localhost:3000/api/v1 for local testing. Leave production value configurable."
+        },
+        "termrepoplugin-vscode.cloudSync.accessToken": {
+          "type": "string",
+          "default": "",
+          "description": "Plugin access token generated in the control site. It must include the sync:snapshot scope."
         }
       }
     }

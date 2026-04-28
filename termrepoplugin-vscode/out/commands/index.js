@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.showAllWordsCommand = exports.printSelectionCommand = exports.importWordsCommand = exports.exportWordsCommand = exports.configureFavoriteKeybindingCommand = exports.copyWordCommand = exports.addWordCommand = void 0;
+exports.showAllWordsCommand = exports.printSelectionCommand = exports.importWordsCommand = exports.exportWordsCommand = exports.uploadCloudSnapshotCommand = exports.mergeWithCloudCommand = exports.downloadCloudSnapshotCommand = exports.cloudSyncStatusCommand = exports.configureFavoriteKeybindingCommand = exports.copyWordCommand = exports.addWordCommand = void 0;
 exports.registerCommands = registerCommands;
 const addWord_1 = require("./addWord");
 const copyWord_1 = require("./copyWord");
 const configureFavoriteKeybinding_1 = require("./configureFavoriteKeybinding");
+const cloudSync_1 = require("./cloudSync");
 const exportWords_1 = require("./exportWords");
 const importWords_1 = require("./importWords");
 const printSelection_1 = require("./printSelection");
@@ -15,6 +16,11 @@ var copyWord_2 = require("./copyWord");
 Object.defineProperty(exports, "copyWordCommand", { enumerable: true, get: function () { return copyWord_2.copyWordCommand; } });
 var configureFavoriteKeybinding_2 = require("./configureFavoriteKeybinding");
 Object.defineProperty(exports, "configureFavoriteKeybindingCommand", { enumerable: true, get: function () { return configureFavoriteKeybinding_2.configureFavoriteKeybindingCommand; } });
+var cloudSync_2 = require("./cloudSync");
+Object.defineProperty(exports, "cloudSyncStatusCommand", { enumerable: true, get: function () { return cloudSync_2.cloudSyncStatusCommand; } });
+Object.defineProperty(exports, "downloadCloudSnapshotCommand", { enumerable: true, get: function () { return cloudSync_2.downloadCloudSnapshotCommand; } });
+Object.defineProperty(exports, "mergeWithCloudCommand", { enumerable: true, get: function () { return cloudSync_2.mergeWithCloudCommand; } });
+Object.defineProperty(exports, "uploadCloudSnapshotCommand", { enumerable: true, get: function () { return cloudSync_2.uploadCloudSnapshotCommand; } });
 var exportWords_2 = require("./exportWords");
 Object.defineProperty(exports, "exportWordsCommand", { enumerable: true, get: function () { return exportWords_2.exportWordsCommand; } });
 var importWords_2 = require("./importWords");
@@ -45,6 +51,10 @@ function registerCommands(context, storage) {
         (0, configureFavoriteKeybinding_1.configureFavoriteKeybindingCommand)(),
         (0, exportWords_1.exportWordsCommand)(storage),
         (0, importWords_1.importWordsCommand)(storage),
+        (0, cloudSync_1.cloudSyncStatusCommand)(),
+        (0, cloudSync_1.uploadCloudSnapshotCommand)(storage),
+        (0, cloudSync_1.downloadCloudSnapshotCommand)(storage),
+        (0, cloudSync_1.mergeWithCloudCommand)(storage),
     ];
     context.subscriptions.push(...commands);
 }

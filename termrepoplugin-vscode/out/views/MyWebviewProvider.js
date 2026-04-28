@@ -129,6 +129,18 @@ class MyWebviewProvider {
             case 'importWords':
                 await vscode.commands.executeCommand('termrepoplugin-vscode.importWords');
                 return;
+            case 'cloudSyncStatus':
+                await vscode.commands.executeCommand('termrepoplugin-vscode.cloudSyncStatus');
+                return;
+            case 'uploadCloudSnapshot':
+                await vscode.commands.executeCommand('termrepoplugin-vscode.uploadCloudSnapshot');
+                return;
+            case 'downloadCloudSnapshot':
+                await vscode.commands.executeCommand('termrepoplugin-vscode.downloadCloudSnapshot');
+                return;
+            case 'mergeWithCloud':
+                await vscode.commands.executeCommand('termrepoplugin-vscode.mergeWithCloud');
+                return;
             case 'openSettings':
                 await vscode.commands.executeCommand('workbench.action.openSettings', 'termrepoplugin-vscode');
                 return;
@@ -778,6 +790,10 @@ class MyWebviewProvider {
         <div id="configMenu" class="menu hidden">
           <button id="importButton" type="button">导入单词库</button>
           <button id="exportButton" type="button">导出单词库</button>
+          <button id="cloudStatusButton" type="button">云同步状态</button>
+          <button id="cloudUploadButton" type="button">上传到云端</button>
+          <button id="cloudDownloadButton" type="button">从云端拉取</button>
+          <button id="cloudMergeButton" type="button">合并云端词库</button>
           <button id="settingsButton" type="button">插件设置</button>
         </div>
       </div>
@@ -907,6 +923,10 @@ class MyWebviewProvider {
     const configMenu = document.getElementById("configMenu");
     const importButton = document.getElementById("importButton");
     const exportButton = document.getElementById("exportButton");
+    const cloudStatusButton = document.getElementById("cloudStatusButton");
+    const cloudUploadButton = document.getElementById("cloudUploadButton");
+    const cloudDownloadButton = document.getElementById("cloudDownloadButton");
+    const cloudMergeButton = document.getElementById("cloudMergeButton");
     const settingsButton = document.getElementById("settingsButton");
     const backButton = document.getElementById("backButton");
     const searchInput = document.getElementById("searchInput");
@@ -1157,6 +1177,26 @@ class MyWebviewProvider {
     exportButton.addEventListener("click", () => {
       configMenu.classList.add("hidden");
       vscode.postMessage({ command: "exportWords" });
+    });
+
+    cloudStatusButton.addEventListener("click", () => {
+      configMenu.classList.add("hidden");
+      vscode.postMessage({ command: "cloudSyncStatus" });
+    });
+
+    cloudUploadButton.addEventListener("click", () => {
+      configMenu.classList.add("hidden");
+      vscode.postMessage({ command: "uploadCloudSnapshot" });
+    });
+
+    cloudDownloadButton.addEventListener("click", () => {
+      configMenu.classList.add("hidden");
+      vscode.postMessage({ command: "downloadCloudSnapshot" });
+    });
+
+    cloudMergeButton.addEventListener("click", () => {
+      configMenu.classList.add("hidden");
+      vscode.postMessage({ command: "mergeWithCloud" });
     });
 
     settingsButton.addEventListener("click", () => {

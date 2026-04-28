@@ -24,6 +24,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   registerCommands(context, storage);
   registerTermCompletionProvider(context, storage);
   registerWebviewView(context, storage);
+  console.log('addVersion');
+  
 }
 
 /**

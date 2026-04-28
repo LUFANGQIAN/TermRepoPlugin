@@ -710,7 +710,7 @@ SOFTWARE.
 | ------- | ------------------------------------------------------ |
 | GitHub  | https://github.com/your-username/TermRepoPlugin        |
 | Issues  | https://github.com/your-username/TermRepoPlugin/issues |
-| Email   | [开发中]                                               |
+| Email   | mr.wang.vn@gmail.com                                   |
 | Discord | [规划中]                                               |
 
 ------
@@ -727,5 +727,5 @@ SOFTWARE.
 
 **📌 注：本文档中标注 [开发中] 的内容将在后续版本中完善，[规划中] 的内容为未来功能计划。**
 
-**最后更新：2026 年 3 月**
+**最后更新：2026 年 4 月**
 

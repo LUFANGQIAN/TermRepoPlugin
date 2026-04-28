@@ -148,6 +148,37 @@ export class StorageManager implements vscode.Disposable {
     return true;
   }
 
+  async replaceTerms(terms: TermEntry[]): Promise<void> {
+    this.terms = new Map(terms.map((term) => [term.id, term]));
+    await this.save();
+    this.changeEmitter.fire();
+  }
+
+  async mergeTerms(terms: TermEntry[]): Promise<{ imported: number; skipped: number }> {
+    let imported = 0;
+    let skipped = 0;
+
+    for (const term of terms) {
+      const exists = Array.from(this.terms.values()).some(
+        (item) => item.id === term.id || item.originalText === term.originalText
+      );
+      if (exists) {
+        skipped += 1;
+        continue;
+      }
+
+      this.terms.set(term.id, term);
+      imported += 1;
+    }
+
+    if (imported > 0) {
+      await this.save();
+      this.changeEmitter.fire();
+    }
+
+    return { imported, skipped };
+  }
+
   /**
    * 获取拆分项的最高频备注建议。
    *
