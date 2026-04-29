@@ -15,3 +15,4 @@
 - Lint 验证：`npm run lint` 通过。
 
 - 修正 package.json 新增命令标题和配置描述为英文，避免终端编码导致扩展元数据出现问号。
+- Added plugin AI analyze client and wired add-word flow to prefill editable notes/tags, with warning fallback to local suggestions.

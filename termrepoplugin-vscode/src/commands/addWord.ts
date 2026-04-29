@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { createAiClient } from '../services/aiClient';
 import { StorageManager } from '../storage/StorageManager';
 import { copyToClipboard } from '../utils/clipboard';
 import { askForTermDetails } from '../utils/termUtils';
@@ -53,8 +54,9 @@ export function addWordCommand(storage: StorageManager): vscode.Disposable {
       return;
     }
 
+    const aiDefaults = await tryAnalyzeWithAi(word, editor, filePath);
     const getSuggestion = (partText: string): string | undefined => storage.getTopSuggestion(partText);
-    const newTerm = await askForTermDetails(word, filePath, getSuggestion);
+    const newTerm = await askForTermDetails(word, filePath, getSuggestion, aiDefaults);
     if (!newTerm) {
       void vscode.window.showInformationMessage('已取消添加单词。');
       return;
@@ -75,4 +77,38 @@ export function addWordCommand(storage: StorageManager): vscode.Disposable {
     await copyToClipboard(word, false);
     void vscode.window.showInformationMessage(`已收藏单词：${word}`);
   });
+}
+
+async function tryAnalyzeWithAi(
+  word: string,
+  editor: vscode.TextEditor | undefined,
+  filePath: string | undefined
+) {
+  const client = createAiClient();
+  if (!client) return undefined;
+
+  try {
+    return await vscode.window.withProgress(
+      { location: vscode.ProgressLocation.Notification, title: 'TermRepo 正在生成 AI 翻译建议...', cancellable: false },
+      () => client.analyzeTerm({
+        originalText: word,
+        filePath,
+        fileName: editor?.document.fileName.split(/[\\/]/).pop(),
+        languageId: editor?.document.languageId,
+        surroundingCode: getSurroundingCode(editor),
+      })
+    );
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    void vscode.window.showWarningMessage(`AI 翻译建议暂不可用，已回退本地建议：${reason}`);
+    return undefined;
+  }
+}
+
+function getSurroundingCode(editor: vscode.TextEditor | undefined): string | undefined {
+  if (!editor) return undefined;
+  const line = editor.selection.active.line;
+  const start = Math.max(0, line - 3);
+  const end = Math.min(editor.document.lineCount - 1, line + 3);
+  return editor.document.getText(new vscode.Range(start, 0, end, editor.document.lineAt(end).text.length));
 }

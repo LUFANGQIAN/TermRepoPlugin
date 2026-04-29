@@ -35,6 +35,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.addWordCommand = addWordCommand;
 const vscode = __importStar(require("vscode"));
+const aiClient_1 = require("../services/aiClient");
 const clipboard_1 = require("../utils/clipboard");
 const termUtils_1 = require("../utils/termUtils");
 /**
@@ -80,8 +81,9 @@ function addWordCommand(storage) {
             void vscode.window.showWarningMessage(`单词 "${word}" 已存在。`);
             return;
         }
+        const aiDefaults = await tryAnalyzeWithAi(word, editor, filePath);
         const getSuggestion = (partText) => storage.getTopSuggestion(partText);
-        const newTerm = await (0, termUtils_1.askForTermDetails)(word, filePath, getSuggestion);
+        const newTerm = await (0, termUtils_1.askForTermDetails)(word, filePath, getSuggestion, aiDefaults);
         if (!newTerm) {
             void vscode.window.showInformationMessage('已取消添加单词。');
             return;
@@ -99,5 +101,32 @@ function addWordCommand(storage) {
         await (0, clipboard_1.copyToClipboard)(word, false);
         void vscode.window.showInformationMessage(`已收藏单词：${word}`);
     });
+}
+async function tryAnalyzeWithAi(word, editor, filePath) {
+    const client = (0, aiClient_1.createAiClient)();
+    if (!client)
+        return undefined;
+    try {
+        return await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'TermRepo 正在生成 AI 翻译建议...', cancellable: false }, () => client.analyzeTerm({
+            originalText: word,
+            filePath,
+            fileName: editor?.document.fileName.split(/[\\/]/).pop(),
+            languageId: editor?.document.languageId,
+            surroundingCode: getSurroundingCode(editor),
+        }));
+    }
+    catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        void vscode.window.showWarningMessage(`AI 翻译建议暂不可用，已回退本地建议：${reason}`);
+        return undefined;
+    }
+}
+function getSurroundingCode(editor) {
+    if (!editor)
+        return undefined;
+    const line = editor.selection.active.line;
+    const start = Math.max(0, line - 3);
+    const end = Math.min(editor.document.lineCount - 1, line + 3);
+    return editor.document.getText(new vscode.Range(start, 0, end, editor.document.lineAt(end).text.length));
 }
 //# sourceMappingURL=addWord.js.map

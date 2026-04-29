@@ -123,10 +123,11 @@ async function askForPartNote(partText, index, total, suggestion) {
  * @param getSuggestion 动态建议获取函数，优先级高于静态建议表。
  * @returns 完整词条；用户任一步取消时返回 `undefined`。
  */
-async function askForTermDetails(word, filePath, getSuggestion) {
+async function askForTermDetails(word, filePath, getSuggestion, defaults) {
     const overallNote = await vscode.window.showInputBox({
         prompt: `“${word}” 的整体备注是什么？`,
-        placeHolder: '例如：主页路由（可留空）',
+        placeHolder: defaults?.overallNote || '例如：主页路由（可留空）',
+        value: defaults?.overallNote || '',
     });
     if (overallNote === undefined) {
         return undefined;
@@ -136,7 +137,8 @@ async function askForTermDetails(word, filePath, getSuggestion) {
     for (let index = 0; index < partsText.length; index += 1) {
         const partText = partsText[index];
         const externalSuggestion = getSuggestion ? getSuggestion(partText) : undefined;
-        const suggestion = externalSuggestion ?? getStaticSuggestion(partText);
+        const aiDefault = defaults?.parts?.find((part) => part.text.toLowerCase() === partText.toLowerCase());
+        const suggestion = aiDefault?.note ?? externalSuggestion ?? getStaticSuggestion(partText);
         const note = await askForPartNote(partText, index + 1, partsText.length, suggestion);
         if (note === undefined) {
             return undefined;
@@ -144,8 +146,8 @@ async function askForTermDetails(word, filePath, getSuggestion) {
         parts.push({
             text: partText,
             note: note || undefined,
-            tags: autoTagPart(partText, note),
-            type: 'camelCase',
+            tags: Array.from(new Set([...(aiDefault?.tags ?? []), ...autoTagPart(partText, note)])),
+            type: aiDefault?.type ?? 'camelCase',
         });
     }
     const globalTags = [];
@@ -156,6 +158,9 @@ async function askForTermDetails(word, filePath, getSuggestion) {
         globalTags.push('zh');
     }
     const partTagsSet = new Set(parts.flatMap((part) => part.tags));
+    for (const tag of defaults?.tags ?? []) {
+        partTagsSet.add(tag);
+    }
     partTagsSet.forEach((tag) => {
         if (!globalTags.includes(tag)) {
             globalTags.push(tag);
