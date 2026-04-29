@@ -3,8 +3,7 @@
   "publisher": "termrepo",
   "displayName": "TermRepoPlugin-VSCode",
   "description": "一键收藏术语，并通过固定符号快速搜索复用词库单词。",
-  "version": "0.0.1",
-  "preview": true,
+  "version": "0.1.0",
   "license": "MIT",
   "repository": {
     "type": "git",
